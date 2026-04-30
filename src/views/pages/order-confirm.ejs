@@ -1,0 +1,142 @@
+<%- include('../partials/head', { title }) %>
+
+<section class="section-title-row">
+  <h1>¡Pedido confirmado!</h1>
+  <p>Tu pedido fue registrado correctamente. A continuación podés subir el comprobante de pago.</p>
+</section>
+
+<section class="checkout-webapp">
+  <article class="checkout-shell admin-card">
+
+    <div class="order-confirm-badge">
+      <span class="status-badge status-<%= order.status %>">
+        <%
+          const statusLabels = {
+            pending_payment: 'Esperando pago',
+            whatsapp_pending_validation: 'Comprobante enviado',
+            approved: 'Pago aprobado',
+            paid: 'Pagado',
+            shipped: 'Enviado',
+            cancelled: 'Cancelado'
+          };
+        %>
+        <%= statusLabels[order.status] || order.status %>
+      </span>
+    </div>
+
+    <div class="order-confirm-meta">
+      <p><strong>N° de pedido:</strong> <span class="order-id-code"><%= order._id %></span></p>
+      <p><strong>Total:</strong> $<%= order.total.toLocaleString('es-AR') %></p>
+      <p><strong>Entrega:</strong> <%= order.deliveryMethod === 'delivery' ? 'Envío a domicilio' : 'Retiro en local' %></p>
+      <% if (order.deliveryMethod === 'delivery' && order.deliveryAddress) { %>
+        <p><strong>Dirección:</strong> <%= order.deliveryAddress %></p>
+      <% } %>
+      <p><strong>Contacto:</strong> <%= order.customerPhone %></p>
+    </div>
+
+    <details class="checkout-detail" open>
+      <summary>Detalle del pedido (<%= order.items.length %> producto<%= order.items.length !== 1 ? 's' : '' %>)</summary>
+      <div class="checkout-items">
+        <% order.items.forEach(function(item) { %>
+          <div class="checkout-row">
+            <div>
+              <strong><%= item.titleSnapshot %></strong>
+              <p>$<%= item.unitPrice.toLocaleString('es-AR') %> × <%= item.quantity %></p>
+            </div>
+            <p class="order-item-subtotal">$<%= (item.unitPrice * item.quantity).toLocaleString('es-AR') %></p>
+          </div>
+        <% }) %>
+      </div>
+    </details>
+
+    <% if (order.status === 'pending_payment') { %>
+      <div class="proof-upload-section">
+        <h3>Subir comprobante de pago</h3>
+        <p>Una vez que hayas realizado el pago, subí el comprobante y nuestro equipo lo validará.</p>
+        <form id="proof-form" class="admin-form" enctype="multipart/form-data" data-order-id="<%= order._id %>">
+          <label for="proofFile">Imagen del comprobante (JPG, PNG — máx. 8 MB)</label>
+          <input id="proofFile" name="proofFile" type="file" accept="image/*" required />
+          <button type="submit" class="btn-primary" id="proof-submit-btn" data-loading="Enviando...">Subir comprobante</button>
+        </form>
+        <p id="proof-feedback" class="checkout-feedback"></p>
+      </div>
+    <% } else if (order.status === 'whatsapp_pending_validation') { %>
+      <div class="proof-upload-section proof-sent">
+        <p>✓ Comprobante enviado. Estamos validando tu pago, te avisaremos pronto.</p>
+        <% if (order.paymentProofUrl) { %>
+          <a href="<%= order.paymentProofUrl %>" target="_blank" rel="noopener" class="ghost-link">Ver comprobante enviado</a>
+        <% } %>
+      </div>
+    <% } else if (order.status === 'approved') { %>
+      <div class="proof-upload-section proof-sent">
+        <p>✓ ¡Pago aprobado! Tu pedido está en preparación.</p>
+      </div>
+    <% } %>
+
+    <div class="order-confirm-actions">
+      <a href="/mis-pedidos" class="ghost-link">Ver todos mis pedidos</a>
+      <a href="/catalogo" class="btn-primary">Seguir comprando</a>
+    </div>
+
+  </article>
+</section>
+
+<script>
+(function () {
+  var form = document.getElementById('proof-form');
+  if (!form) return;
+  var orderId = form.dataset.orderId;
+  var feedback = document.getElementById('proof-feedback');
+  var btn = document.getElementById('proof-submit-btn');
+
+  var setLoading = function (loading) {
+    if (!btn) return;
+    if (loading) {
+      btn.dataset.originalText = btn.textContent;
+      btn.textContent = btn.dataset.loading || 'Enviando...';
+      btn.disabled = true;
+    } else {
+      btn.textContent = btn.dataset.originalText || btn.textContent;
+      btn.disabled = false;
+    }
+  };
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var fileInput = document.getElementById('proofFile');
+    if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+      feedback.textContent = 'Seleccioná un archivo primero.';
+      feedback.className = 'form-error';
+      return;
+    }
+
+    setLoading(true);
+    var formData = new FormData();
+    formData.append('proofFile', fileInput.files[0]);
+
+    try {
+      var response = await fetch('/api/orders/' + orderId + '/proof', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      });
+      var data = await response.json();
+      if (!response.ok) {
+        feedback.textContent = data.message || 'No se pudo enviar el comprobante.';
+        feedback.className = 'form-error';
+        setLoading(false);
+        return;
+      }
+      feedback.textContent = data.message;
+      feedback.className = 'form-notice';
+      form.innerHTML = '<p>✓ Comprobante enviado correctamente. Te avisaremos cuando sea validado.</p>';
+    } catch {
+      feedback.textContent = 'Error de conexión. Intentá nuevamente.';
+      feedback.className = 'form-error';
+      setLoading(false);
+    }
+  });
+})();
+</script>
+
+<%- include('../partials/footer') %>

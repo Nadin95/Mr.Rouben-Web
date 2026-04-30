@@ -1,0 +1,21 @@
+MR ROUBEN - LINKS PARA DEMO DESDE CELULAR
+Fecha: 2026-04-15
+Host local: 192.168.18.148
+Puerto: 3000
+
+IMPORTANTE
+- El celular y la notebook deben estar en la misma red WiFi.
+- Si no abre, revisar firewall local y que el servidor siga encendido.
+
+LINKS PRINCIPALES
+- Home: http://192.168.18.148:3000/
+- Catalogo: http://192.168.18.148:3000/catalogo
+- Carrito: http://192.168.18.148:3000/checkout
+- Comunidad: http://192.168.18.148:3000/foro
+- Registro: http://192.168.18.148:3000/registro
+- Login: http://192.168.18.148:3000/login
+- Admin: http://192.168.18.148:3000/admin
+
+LINKS ALTERNATIVOS (solo en la misma maquina)
+- Localhost Home: http://localhost:3000/
+- Localhost Login: http://localhost:3000/login

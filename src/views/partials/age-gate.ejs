@@ -1,0 +1,79 @@
+<div id="age-gate" class="age-gate" role="dialog" aria-modal="true" aria-labelledby="age-gate-title">
+  <div class="age-gate-card">
+    <p class="age-gate-badge">+18</p>
+    <h2 id="age-gate-title">Verificación de edad</h2>
+    <p>
+      Este sitio contiene productos para adultos. Para continuar, debés confirmar que sos mayor de 18 años.
+    </p>
+    <div class="age-gate-actions">
+      <button id="age-gate-confirm" type="button" class="btn-primary">Soy mayor de 18 años</button>
+      <a href="https://www.google.com" class="ghost-btn">Salir</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const gateKey = 'mrRoubenAgeVerified';
+    const gate = document.getElementById('age-gate');
+    const confirmBtn = document.getElementById('age-gate-confirm');
+    const guardedForms = Array.from(document.querySelectorAll('.age-gate-form'));
+
+    if (!gate || !confirmBtn) {
+      return;
+    }
+
+    const setFormsEnabled = (enabled) => {
+      guardedForms.forEach((form) => {
+        const controls = form.querySelectorAll('input, select, textarea, button');
+        controls.forEach((control) => {
+          const inputType = control.getAttribute('type');
+          if (inputType === 'hidden') {
+            return;
+          }
+          control.disabled = !enabled;
+        });
+      });
+    };
+
+    const hasAgeConfirmation = () => {
+      try {
+        return window.localStorage.getItem(gateKey) === 'true';
+      } catch {
+        return false;
+      }
+    };
+
+    const saveAgeConfirmation = () => {
+      try {
+        window.localStorage.setItem(gateKey, 'true');
+      } catch {
+        // If storage is blocked, keep the session unlocked while page is open.
+      }
+    };
+
+    const hideGate = () => {
+      gate.classList.add('is-hidden');
+      document.body.classList.remove('age-gate-open');
+      setFormsEnabled(true);
+    };
+
+    const showGate = () => {
+      gate.classList.remove('is-hidden');
+      document.body.classList.add('age-gate-open');
+      setFormsEnabled(false);
+    };
+
+    if (hasAgeConfirmation()) {
+      hideGate();
+      return;
+    }
+
+    showGate();
+
+    confirmBtn.addEventListener('click', () => {
+      saveAgeConfirmation();
+      hideGate();
+    });
+  })();
+</script>

@@ -1,0 +1,129 @@
+MR ROUBEN - PRESENTACION COMERCIAL Y TECNICA
+Propuesta: Opcion 3 (Hosting Node economico + WhatsApp API oficial + OCR externo)
+Fecha: 2026-04-15
+Region objetivo: San Francisco, Cordoba, Argentina
+
+OBJETIVO
+Implementar una arquitectura economica y estable para produccion, manteniendo el codigo base actual (TypeScript + Express + MongoDB) y agregando servicios externos para mensajeria oficial, OCR de comprobantes y almacenamiento de imagenes.
+
+--------------------------------------------------------------------
+1) ESTRATEGIA POR ETAPAS (RECOMENDADA)
+--------------------------------------------------------------------
+ETAPA 1 - Base productiva estable
+- Deploy en hosting Node economico (Render o Railway).
+- Base de datos MongoDB Atlas.
+- Dominio + SSL + variables de entorno seguras.
+
+ETAPA 2 - Canal oficial de WhatsApp
+- Migrar de integracion legacy a Meta WhatsApp Cloud API.
+- Webhook oficial para recepcion y envio de mensajes.
+- Plantillas de mensajes (aprobadas por Meta) para notificaciones.
+
+ETAPA 3 - OCR de comprobantes
+- Integrar Google Cloud Vision API.
+- Leer texto de comprobantes automaticamente.
+- Sugerir validacion al admin (con fallback manual si la confianza es baja).
+
+ETAPA 4 - Operacion y monitoreo
+- Uptime y alertas basicas.
+- Reintentos de integraciones externas.
+- Logs de trazabilidad por pedido/comprobante.
+
+--------------------------------------------------------------------
+2) PRESUPUESTO APROXIMADO MENSUAL (USD Y ARS)
+--------------------------------------------------------------------
+Referencia para conversion: 1 USD = 1,200 ARS
+Nota: conversion orientativa, ajustar segun cotizacion del dia de cobro.
+
+ESCENARIO A - BAJO VOLUMEN (arranque)
+- Hosting Node (Render/Railway starter): USD 7 a 12
+- MongoDB Atlas (M2/M5 segun uso): USD 9 a 25
+- WhatsApp Cloud API (conversaciones): USD 10 a 40
+- Google Vision OCR (comprobantes): USD 3 a 20
+- Cloudinary (media/imagenes): USD 0 a 15
+- Brevo (email transaccional): USD 0 a 15
+- UptimeRobot: USD 0 a 8
+TOTAL APROX: USD 29 a 135 / mes
+TOTAL APROX EN ARS: 34,800 a 162,000 ARS / mes
+
+ESCENARIO B - VOLUMEN MEDIO
+- Hosting Node: USD 25 a 45
+- MongoDB Atlas: USD 25 a 60
+- WhatsApp Cloud API: USD 40 a 140
+- Google Vision OCR: USD 20 a 60
+- Cloudinary: USD 15 a 40
+- Brevo: USD 15 a 35
+- UptimeRobot: USD 8 a 29
+TOTAL APROX: USD 148 a 409 / mes
+TOTAL APROX EN ARS: 177,600 a 490,800 ARS / mes
+
+ESCENARIO C - VOLUMEN ALTO / CAMPANAS
+- Hosting Node: USD 60 a 120
+- MongoDB Atlas: USD 80 a 250
+- WhatsApp Cloud API: USD 150 a 500
+- Google Vision OCR: USD 60 a 250
+- Cloudinary: USD 40 a 140
+- Brevo: USD 35 a 120
+- UptimeRobot: USD 8 a 29
+TOTAL APROX: USD 433 a 1,409 / mes
+TOTAL APROX EN ARS: 519,600 a 1,690,800 ARS / mes
+
+--------------------------------------------------------------------
+3) EXPLICACION DE CADA SERVICIO (PARA CLIENTA)
+--------------------------------------------------------------------
+1. Hosting Node (Render o Railway)
+- Que es: donde vive y se ejecuta la pagina web.
+- Para que sirve: mantiene el sitio online 24/7.
+- Por que conviene: costo bajo para empezar y escalable cuando crece.
+
+2. MongoDB Atlas
+- Que es: base de datos administrada en la nube.
+- Para que sirve: guarda usuarios, pedidos, productos y comunidad.
+- Por que conviene: evita administrar servidor de base de datos manualmente.
+
+3. WhatsApp Cloud API oficial (Meta)
+- Que es: canal oficial de WhatsApp Business.
+- Para que sirve: enviar/recibir mensajes de forma estable y profesional.
+- Por que conviene: mas confiable que soluciones no oficiales; apto para negocio.
+
+4. Google Cloud Vision OCR
+- Que es: servicio de lectura de texto en imagenes.
+- Para que sirve: extrae datos del comprobante de pago automaticamente.
+- Por que conviene: reduce revision manual y acelera validacion.
+
+5. Cloudinary (storage de imagenes)
+- Que es: almacenamiento y distribucion de imagenes.
+- Para que sirve: guardar fotos de productos, carrusel y comprobantes.
+- Por que conviene: evita depender del disco local del hosting.
+
+6. Brevo (email transaccional)
+- Que es: plataforma de envio de emails.
+- Para que sirve: verificacion de cuenta, notificaciones y comunicaciones operativas.
+- Por que conviene: mejor entregabilidad que usar correo personal SMTP.
+
+7. UptimeRobot (monitoreo)
+- Que es: servicio de monitoreo de disponibilidad.
+- Para que sirve: avisa si la pagina se cae o responde lento.
+- Por que conviene: deteccion temprana de incidentes con costo muy bajo.
+
+--------------------------------------------------------------------
+4) COMPATIBILIDAD CON EL STACK ACTUAL
+--------------------------------------------------------------------
+Estado: COMPATIBLE.
+- No requiere refactorizacion profunda del codigo base.
+- La app actual (TypeScript/Express/Mongoose/JWT) se acopla a servicios externos mediante APIs.
+- Integraciones sugeridas se agregan como modulos/servicios adicionales.
+
+--------------------------------------------------------------------
+5) RECOMENDACION FINAL
+--------------------------------------------------------------------
+Para equilibrio costo/estabilidad:
+- Hosting Node: Render (starter/pro) o Railway segun cotizacion vigente.
+- DB: MongoDB Atlas.
+- Mensajeria: Meta WhatsApp Cloud API oficial.
+- OCR: Google Vision API.
+- Imagenes: Cloudinary.
+- Email: Brevo.
+- Monitoreo: UptimeRobot.
+
+Esta opcion minimiza riesgos operativos y mantiene una inversion mensual razonable para una pyme local.

@@ -1,0 +1,218 @@
+<%- include('../partials/head', { title }) %>
+
+<section class="section-title-row">
+  <h1>Panel de Administración</h1>
+  <p>Gestión operativa dividida por secciones: stock y productos, carrusel/categorías, comunidad y pagos.</p>
+</section>
+
+<details class="admin-section-block admin-accordion" open>
+  <summary class="admin-section-banner">
+    <span class="admin-section-title">Stock y Agregar Productos</span>
+    <span class="admin-section-subtitle">Cargá productos nuevos y actualizá stock con imagen antes de confirmar.</span>
+  </summary>
+
+  <div class="admin-grid admin-grid-two">
+  <article class="admin-card">
+    <h2>Agregar nuevo producto</h2>
+    <form method="post" action="/admin/catalog/add" class="admin-form" enctype="multipart/form-data">
+      <label>Nombre</label>
+      <input name="name" required />
+
+      <label>Descripción</label>
+      <textarea name="description" required></textarea>
+
+      <label>Categoría</label>
+      <select name="category" required>
+        <option value="Tabaco">Tabaco</option>
+        <option value="Vapers">Vapers</option>
+        <option value="Parafernalia">Parafernalia</option>
+      </select>
+
+      <label>Precio</label>
+      <input name="price" type="number" min="0" required />
+
+      <label>Stock inicial</label>
+      <input name="stock" type="number" min="0" required />
+
+      <label>Imagen desde tu computadora</label>
+      <input name="imageFile" type="file" accept="image/*" />
+
+      <label>Imagen del producto (URL)</label>
+      <input name="imageUrl" type="url" placeholder="https://... (opcional)" />
+      <small class="input-help">Si cargás archivo y URL, se usará el archivo.</small>
+
+      <label class="inline-check">
+        <input name="isFeatured" type="checkbox" />
+        Destacado en home
+      </label>
+
+      <button class="btn-primary" type="submit">Agregar producto</button>
+    </form>
+  </article>
+
+  <article class="admin-card">
+    <h2>Inventario y edición de catálogo</h2>
+    <% if (!products.length) { %>
+      <p>No hay productos cargados.</p>
+    <% } %>
+
+    <div class="admin-product-list">
+      <% products.forEach((product) => { %>
+        <div class="admin-product-row">
+          <div>
+            <% if (product.imageUrl) { %>
+              <img src="<%= product.imageUrl %>" alt="Imagen de <%= product.name %>" class="admin-thumb" />
+            <% } %>
+            <strong><%= product.name %></strong>
+            <p><%= product.category %> | $<%= product.price %> | Estado: <%= product.isAvailable ? 'Disponible' : 'Sin Stock' %></p>
+          </div>
+          <form method="post" action="/admin/inventory/<%= product._id %>" class="admin-form" enctype="multipart/form-data">
+            <label>Stock</label>
+            <input name="stock" type="number" min="0" value="<%= product.stock %>" required />
+
+            <label>Actualizar imagen desde computadora</label>
+            <input name="inventoryImageFile" type="file" accept="image/*" />
+
+            <label>Actualizar imagen por URL (opcional)</label>
+            <input name="imageUrl" type="url" placeholder="https://..." />
+
+            <small class="input-help">Si cargás archivo y URL, se usará el archivo.</small>
+            <button type="submit" class="ghost-btn">Actualizar stock</button>
+          </form>
+          <form method="post" action="/admin/catalog/<%= product._id %>/delete" onsubmit="return confirm('¿Eliminar producto del catálogo?')">
+            <button type="submit" class="danger-btn">Eliminar</button>
+          </form>
+        </div>
+      <% }) %>
+    </div>
+  </article>
+  </div>
+</details>
+
+<details class="admin-section-block admin-accordion">
+  <summary class="admin-section-banner">
+    <span class="admin-section-title">Carrusel y Categorías</span>
+    <span class="admin-section-subtitle">Configurá las imágenes visibles en el inicio por categoría.</span>
+  </summary>
+
+  <div class="admin-grid admin-grid-one">
+  <article class="admin-card">
+    <h2>Carrusel de categorías (Inicio)</h2>
+    <p>Cargá una imagen por categoría para mostrar en el inicio.</p>
+    <form method="post" action="/admin/home-carousel" class="admin-form" enctype="multipart/form-data">
+      <label>Imagen Tabaco (URL)</label>
+      <input
+        name="tabacoImageUrl"
+        type="url"
+        placeholder="https://..."
+        value="<%= homeCarousel?.tabacoImageUrl || '' %>"
+      />
+      <label>Imagen Tabaco desde computadora</label>
+      <input name="tabacoImageFile" type="file" accept="image/*" />
+
+      <label>Imagen Vapers (URL)</label>
+      <input
+        name="vapersImageUrl"
+        type="url"
+        placeholder="https://..."
+        value="<%= homeCarousel?.vapersImageUrl || '' %>"
+      />
+      <label>Imagen Vapers desde computadora</label>
+      <input name="vapersImageFile" type="file" accept="image/*" />
+
+      <label>Imagen Parafernalia (URL)</label>
+      <input
+        name="parafernaliaImageUrl"
+        type="url"
+        placeholder="https://..."
+        value="<%= homeCarousel?.parafernaliaImageUrl || '' %>"
+      />
+      <label>Imagen Parafernalia desde computadora</label>
+      <input name="parafernaliaImageFile" type="file" accept="image/*" />
+
+      <small class="input-help">Si cargás archivo y URL en una categoría, se usará el archivo.</small>
+
+      <button class="btn-primary" type="submit">Guardar carrusel</button>
+    </form>
+  </article>
+  </div>
+</details>
+
+<details class="admin-section-block admin-accordion">
+  <summary class="admin-section-banner">
+    <span class="admin-section-title">Solicitudes de Chat en Comunidad</span>
+    <span class="admin-section-subtitle">Aprobá solicitudes para habilitar conversaciones públicas.</span>
+  </summary>
+
+  <div class="admin-grid admin-grid-one">
+  <article class="admin-card">
+    <h2>Solicitudes de inicio de chat en Comunidad</h2>
+    <% if (!forumPendingApproval.length) { %>
+      <p>No hay solicitudes pendientes.</p>
+    <% } %>
+
+    <div class="admin-orders-list">
+      <% forumPendingApproval.forEach((post) => { %>
+        <div class="admin-order-row">
+          <div>
+            <strong><%= post.title %></strong>
+            <p>
+              Usuario: <%= post.author?.username || 'Usuario' %> |
+              Categoría: <%= post.categoryTag %> |
+              Producto: <%= post.productNameSnapshot %>
+            </p>
+          </div>
+          <form method="post" action="/admin/forum/<%= post._id %>/approve">
+            <button type="submit" class="btn-primary">Habilitar chat</button>
+          </form>
+        </div>
+      <% }) %>
+    </div>
+  </article>
+  </div>
+</details>
+
+<details class="admin-section-block admin-accordion">
+  <summary class="admin-section-banner">
+    <span class="admin-section-title">Pagos</span>
+    <span class="admin-section-subtitle">Validación de comprobantes y aprobación final.</span>
+  </summary>
+
+  <div class="admin-grid admin-grid-one">
+  <article class="admin-card">
+    <h2>Pagos pendientes de validación</h2>
+    <% if (!ordersPendingValidation.length) { %>
+      <p>No hay pagos pendientes.</p>
+    <% } %>
+
+    <div class="admin-orders-list">
+      <% ordersPendingValidation.forEach((order) => { %>
+        <div class="admin-order-row">
+          <div class="admin-order-info">
+            <strong>Pedido #<%= String(order._id).slice(-8).toUpperCase() %></strong>
+            <p>Usuario: <%= order.user?.username || 'N/A' %> | Total: $<%= order.total.toLocaleString('es-AR') %></p>
+            <p>Entrega: <%= order.deliveryMethod === 'delivery' ? 'Domicilio' : 'Retiro en local' %><%= order.deliveryAddress ? ' — ' + order.deliveryAddress : '' %></p>
+            <p>Contacto: <%= order.customerPhone %></p>
+            <% if (order.status === 'whatsapp_pending_validation') { %>
+              <span class="status-badge status-whatsapp_pending_validation">Comprobante enviado</span>
+              <% if (order.paymentProofUrl) { %>
+                <a href="<%= order.paymentProofUrl %>" target="_blank" rel="noopener" class="ghost-link" style="display:block;margin-top:0.4rem;">Ver comprobante</a>
+                <a href="<%= order.paymentProofUrl %>" target="_blank" rel="noopener">
+                  <img src="<%= order.paymentProofUrl %>" alt="Comprobante" class="proof-thumb" />
+                </a>
+              <% } %>
+            <% } else { %>
+              <span class="status-badge status-pending_payment">Sin comprobante</span>
+            <% } %>
+          </div>
+          <form method="post" action="/admin/payments/<%= order._id %>/approve">
+            <button type="submit" class="btn-primary" data-loading="Aprobando...">Aprobar pago</button>
+          </form>
+        </div>
+      <% }) %>
+    </div>
+  </article>
+  </div>
+</details>
+
+<%- include('../partials/footer') %>

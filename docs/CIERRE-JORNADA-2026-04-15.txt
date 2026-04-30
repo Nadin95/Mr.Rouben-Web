@@ -1,0 +1,56 @@
+MR ROUBEN - CIERRE DE JORNADA
+Fecha: 2026-04-15
+Estado al cierre: SERVICIOS APAGADOS / LISTO PARA RETOMAR MANANA
+
+RESUMEN DE LO IMPLEMENTADO HOY
+1) Comunidad
+- Solicitud de inicio de conversacion por categoria y producto.
+- Flujo de aprobacion admin para habilitar conversaciones.
+- Conversaciones aprobadas visibles publicamente.
+- Comentarios habilitados para usuarios logueados en conversaciones aprobadas.
+- Boton para mostrar/ocultar formulario de nueva solicitud y mantener vista limpia.
+
+2) Panel Admin
+- Reorganizacion visual por secciones:
+  - Stock y Agregar Productos
+  - Carrusel y Categorias
+  - Solicitudes de Chat en Comunidad
+  - Pagos
+- Alta de producto con imagen por archivo local o URL.
+- Actualizacion de stock para productos existentes con carga de imagen antes de confirmar.
+
+3) Home y Catalogo
+- Carrusel configurable por categoria.
+- Carga de imagenes del carrusel desde computadora o URL.
+- Miniaturas de productos y estilos actualizados.
+
+4) Integraciones
+- SMTP funcionando para envios reales (segun .env).
+- WhatsApp con control por configuracion.
+- Notificaciones de solicitud de comunidad al admin (si WhatsApp no esta ready, queda logueado como skip).
+
+ESTADO TECNICO AL CIERRE
+- Compilacion TypeScript: OK (tsc sin errores)
+- Servidor: APAGADO
+- Puerto 3000: LIBRE
+
+CHECKLIST PARA MANANA
+1) Encender servidor
+- cd /home/Andres/Documentos/Proyecto Mr.Rouben
+- npm run dev
+
+2) Pruebas funcionales recomendadas
+- Crear solicitud de conversacion en Comunidad con usuario normal.
+- Aprobar en Admin la solicitud y validar visibilidad publica.
+- Publicar comentarios desde otro usuario en misma conversacion.
+- Actualizar stock de producto existente cargando nueva imagen local.
+- Verificar carrusel en Home con imagenes cargadas por categoria.
+
+3) Validaciones de demo
+- Probar en notebook y celular (misma red).
+- Confirmar acceso Admin con credenciales vigentes.
+- Confirmar que WhatsApp este en estado esperado para la demo.
+
+NOTAS IMPORTANTES
+- Si aparece EADDRINUSE, cerrar procesos duplicados y liberar 3000 antes de levantar.
+- Si WhatsApp no esta autenticado/ready, los mensajes quedan omitidos y se informa en logs.

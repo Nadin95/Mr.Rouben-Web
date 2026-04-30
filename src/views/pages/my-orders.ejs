@@ -1,0 +1,77 @@
+<%- include('../partials/head', { title }) %>
+
+<section class="section-title-row">
+  <h1>Mis pedidos</h1>
+  <p>Historial de todas tus compras.</p>
+</section>
+
+<section class="page-section">
+  <% if (!orders.length) { %>
+    <article class="admin-card" style="text-align:center; padding: 2.5rem 1rem;">
+      <p>Todavía no realizaste ningún pedido.</p>
+      <a href="/catalogo" class="btn-primary" style="margin-top:1rem; display:inline-block;">Ir al catálogo</a>
+    </article>
+  <% } else { %>
+    <div class="my-orders-list">
+      <% orders.forEach(function(order) { %>
+        <%
+          const statusLabels = {
+            pending_payment: 'Esperando pago',
+            whatsapp_pending_validation: 'Comprobante enviado',
+            approved: 'Pago aprobado',
+            paid: 'Pagado',
+            shipped: 'Enviado',
+            cancelled: 'Cancelado'
+          };
+        %>
+        <article class="admin-card my-order-card">
+          <div class="my-order-header">
+            <div>
+              <span class="order-id-code">#<%= String(order._id).slice(-8).toUpperCase() %></span>
+              <span class="status-badge status-<%= order.status %>"><%= statusLabels[order.status] || order.status %></span>
+            </div>
+            <div class="my-order-meta">
+              <span>$<%= order.total.toLocaleString('es-AR') %></span>
+              <span class="order-date"><%= new Date(order.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' }) %></span>
+            </div>
+          </div>
+
+          <div class="my-order-delivery">
+            <% if (order.deliveryMethod === 'delivery') { %>
+              Envío a domicilio<% if (order.deliveryAddress) { %>: <em><%= order.deliveryAddress %></em><% } %>
+            <% } else { %>
+              Retiro en local
+            <% } %>
+          </div>
+
+          <details class="checkout-detail">
+            <summary>Ver productos (<%= order.items.length %>)</summary>
+            <div class="checkout-items" style="margin-top:0.5rem">
+              <% order.items.forEach(function(item) { %>
+                <div class="checkout-row">
+                  <div>
+                    <strong><%= item.titleSnapshot %></strong>
+                    <p>$<%= item.unitPrice.toLocaleString('es-AR') %> × <%= item.quantity %></p>
+                  </div>
+                  <p class="order-item-subtotal">$<%= (item.unitPrice * item.quantity).toLocaleString('es-AR') %></p>
+                </div>
+              <% }) %>
+            </div>
+          </details>
+
+          <div class="my-order-actions">
+            <% if (order.status === 'pending_payment' || order.status === 'whatsapp_pending_validation') { %>
+              <a href="/pedido/<%= order._id %>" class="btn-primary">
+                <%= order.status === 'pending_payment' ? 'Subir comprobante' : 'Ver pedido' %>
+              </a>
+            <% } else { %>
+              <a href="/pedido/<%= order._id %>" class="ghost-link">Ver detalle</a>
+            <% } %>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  <% } %>
+</section>
+
+<%- include('../partials/footer') %>

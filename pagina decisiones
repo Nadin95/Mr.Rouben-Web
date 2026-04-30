@@ -1,0 +1,84 @@
+Mr. Rouben es una plataforma de ecommerce pensada para ofrecer una experiencia de compra moderna, segura y profesional.
+
+ El proyecto integra un catalogo organizado por categorias,
+ 
+  registro de usuarios con verificacion por email para reducir fraudes,
+
+  y un panel administrativo para gestionar productos, stock y pedidos en tiempo real.
+
+Ademas, incorpora un flujo de checkout claro y funcional, junto con soporte de comunicacion por WhatsApp
+
+ para acompanar el proceso de pago y atencion al cliente.
+
+  Toda la solucion fue desarrollada con foco en escalabilidad, mantenimiento y facilidad de operacion diaria.
+
+El resultado es una base solida para crecer comercialmente, mejorar la relacion con clientes y
+
+ profesionalizar por completo la presencia digital de la marca.
+
+ versión ultra-controlada para iniciar por debajo de ARS 35.000/mes.
+
+      PRESUPUESTO 1
+
+Sí se puede, pero con esta condición:
+
+(usar planes free donde se pueda y poner topes de uso en WhatsApp/OCR).
+
+Presupuesto objetivo inicial (tope ARS 35.000)
+Tomando cambio de referencia $1 USD = ARS 1.200:
+
+*Hosting Node económico: USD 5 a 7
+*MongoDB Atlas M0 (free): USD 0
+*Cloudinary free: USD 0
+*Brevo free: USD 0
+*UptimeRobot free: USD 0
+*WhatsApp Cloud API (bajo volumen): USD 2 a 8
+*Google Vision OCR (uso acotado): USD 1 a 4
+*Total estimado: USD 8 a 19/mes
+*Total en ARS: 9.600 a 22.800/mes
+
+Con margen de seguridad y variación: hasta ARS 28.000–32.000
+Todavía dentro del objetivo de ARS 35.000.
+
+
+
+      PRESUPUESTO 2
+
+Presupuesto objetivo inicial (tope ARS 40.000)
+
+
+*Hosting Node económico (mejor plan inicial): USD 7 a 10
+*MongoDB Atlas M0 (free): USD 0
+*Cloudinary free: USD 0
+*Brevo free: USD 0
+*UptimeRobot free: USD 0
+*WhatsApp Cloud API (bajo volumen): USD 3 a 10
+*Google Vision OCR (uso controlado): USD 1 a 5
+
+
+Total estimado: USD 11 a 25/mes
+Total en ARS: 13.200 a 30.000/mes
+
+Con margen de seguridad (variación de uso + dólar): ARS 32.000 a 39.500/mes
+Sigue dentro del objetivo de ARS 40.000.
+
+
+
+            CONCLUSION
+
+Mejora real respecto al esquema anterior:
+
+
+*Subís un poco el plan de hosting para menos riesgo operativo.
+
+*Mantenés DB, storage, email y monitoreo en free al inicio.
+
+*Das más margen a WhatsApp/OCR para no quedarte corto en semanas movidas.
+
+Topes recomendados para no romper presupuesto (IMPORTANTE)
+
+-WhatsApp: tope de conversaciones mensuales (ej. 120-180).
+
+-OCR: aplicar solo a comprobantes dudosos o de mayor monto.
+
+-Revisar consumo cada 14 días (como en el manual quincenal).

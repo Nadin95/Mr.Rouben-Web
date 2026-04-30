@@ -1,0 +1,83 @@
+<%- include('../partials/head', { title }) %>
+
+<section class="section-title-row">
+  <h1>Checkout</h1>
+  <p>Revisá tu carrito y generá el pedido.</p>
+</section>
+
+<section class="checkout-webapp">
+  <article class="checkout-shell admin-card">
+    <div class="checkout-topline">
+      <h2>Detalle de mi compra</h2>
+      <p class="checkout-topline-total" id="checkout-total-top">$0</p>
+    </div>
+
+    <ol class="checkout-steps" id="checkout-steps" aria-label="Etapas de compra">
+      <li class="is-active" data-step="0">Carrito</li>
+      <li data-step="1">Entrega</li>
+      <li data-step="2">Pago</li>
+    </ol>
+
+    <!-- Paso 0: Carrito -->
+    <div class="checkout-step" id="checkout-step-0">
+      <details class="checkout-detail" open>
+        <summary>Ver detalle del carrito</summary>
+        <div id="checkout-items" class="checkout-items"></div>
+        <p class="checkout-total">Subtotal: <strong id="checkout-total">$0</strong></p>
+      </details>
+      <div class="checkout-nav-row">
+        <a href="/catalogo" class="ghost-link">← Seguir comprando</a>
+        <button type="button" class="btn-primary" id="step0-next">Continuar a Entrega</button>
+      </div>
+    </div>
+
+    <!-- Paso 1: Entrega -->
+    <div class="checkout-step" id="checkout-step-1" hidden>
+      <% if (!locals.currentUser) { %>
+        <p class="checkout-login-note">Necesitás iniciar sesión para finalizar la compra.</p>
+        <a href="/login" class="btn-primary">Ir a login</a>
+      <% } else { %>
+        <form id="checkout-form" class="admin-form checkout-form" data-registered-phone="<%= registeredPhone || '' %>">
+          <fieldset class="checkout-fieldset">
+            <legend>Método de entrega</legend>
+            <label class="inline-check radio-check">
+              <input type="radio" name="deliveryMethod" value="pickup" checked />
+              Retiro en local
+            </label>
+            <%# Envío a domicilio deshabilitado por el momento %>
+          </fieldset>
+
+          <label for="customerPhone">Teléfono para contacto</label>
+          <% if (registeredPhone) { %>
+            <label class="inline-check" for="useRegisteredPhone">
+              <input id="useRegisteredPhone" type="checkbox" checked />
+              Usar mi teléfono registrado (<%= registeredPhone %>)
+            </label>
+          <% } %>
+          <input id="customerPhone" name="customerPhone" placeholder="54911..." required />
+
+          <div class="checkout-nav-row">
+            <button type="button" class="ghost-btn" id="step1-back">← Volver</button>
+            <button type="button" class="btn-primary" id="step1-next">Continuar a Pago</button>
+          </div>
+        </form>
+      <% } %>
+    </div>
+
+    <!-- Paso 2: Confirmación -->
+    <div class="checkout-step" id="checkout-step-2" hidden>
+      <div class="checkout-order-summary" id="checkout-summary"></div>
+      <div class="checkout-pay-notice">
+        <p>Al confirmar, recibirás las instrucciones de pago por WhatsApp. Luego podrás subir tu comprobante desde "Mis pedidos".</p>
+      </div>
+      <div class="checkout-nav-row">
+        <button type="button" class="ghost-btn" id="step2-back">← Volver</button>
+        <button type="button" class="btn-primary" id="checkout-submit-btn" data-loading="Procesando...">Confirmar pedido</button>
+      </div>
+      <p id="checkout-feedback" class="checkout-feedback"></p>
+    </div>
+
+  </article>
+</section>
+
+<%- include('../partials/footer') %>

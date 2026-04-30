@@ -1,0 +1,134 @@
+MR ROUBEN - GUIA DE CONTROL FRONT-END PARA COLEGA
+Fecha: 2026-04-15
+Objetivo: permitir cambios visuales sin romper consistencia, flujos ni conversion.
+
+====================================================================
+1) PRINCIPIOS DE DISENO (NO NEGOCIABLES)
+====================================================================
+1. Mantener legibilidad y contraste en todas las vistas.
+2. No romper la navegacion principal ni CTA de compra.
+3. Priorizar mobile-first y carga rapida.
+4. No tocar logica de negocio desde CSS/HTML salvo requerimiento explicito.
+5. Si se cambia estructura de formulario, validar que los name/id no se rompan.
+
+====================================================================
+2) UBICACIONES CLAVE DEL FRONT
+====================================================================
+- Estilos globales: src/public/css/styles.css
+- JS de tienda/carrito/checkout: src/public/js/store.js
+- Vistas principales (EJS):
+  - src/views/pages/home.ejs
+  - src/views/pages/catalog.ejs
+  - src/views/pages/checkout.ejs
+  - src/views/pages/forum.ejs
+  - src/views/pages/admin.ejs
+  - src/views/pages/login.ejs
+  - src/views/pages/register.ejs
+- Parciales compartidos:
+  - src/views/partials/head.ejs
+  - src/views/partials/footer.ejs
+  - src/views/partials/age-gate.ejs
+
+====================================================================
+3) CHECKLIST ANTES DE TOCAR UI
+====================================================================
+[ ] Revisar desktop y mobile (>= 360px).
+[ ] Identificar clase/componente exacto a modificar.
+[ ] Verificar si ese bloque se reutiliza en otras paginas.
+[ ] Confirmar que no afecta formulario, validaciones o rutas.
+[ ] Si cambia spacing/typography, mantener consistencia global.
+
+====================================================================
+4) CHECKLIST DESPUES DE CADA CAMBIO
+====================================================================
+[ ] npm run build (obligatorio)
+[ ] Revisar visualmente: Home, Catalogo, Checkout, Comunidad, Admin, Login, Registro
+[ ] Probar formulario login y registro
+[ ] Probar checkout completo
+[ ] Probar panel admin (alta producto, stock, carrusel)
+[ ] Probar comunidad (solicitud, aprobacion, comentario)
+[ ] Validar que boton WhatsApp flotante siga visible/no tape elementos clave
+[ ] Validar modal +18 en login y registro
+
+====================================================================
+5) REGLAS PARA NO ROMPER FUNCIONALIDAD
+====================================================================
+1. No renombrar estos IDs sin actualizar JS asociado:
+- cart-count
+- checkout-form
+- checkout-items
+- checkout-total
+- checkout-feedback
+- customerPhone
+- useRegisteredPhone
+- forum-category
+- forum-product
+- forum-toggle-btn
+- forum-request-card
+
+2. No quitar atributos data-* usados por scripts.
+3. No cambiar name de inputs en formularios backend sin coordinar.
+4. No mover acciones de formularios (action="...") sin validar rutas.
+5. No borrar clases estructurales sin buscar usos en todo el proyecto.
+
+====================================================================
+6) GUIA DE ESTILO VISUAL (CONSISTENCIA)
+====================================================================
+Paleta base (usar variables CSS existentes en :root):
+- --bg-main, --bg-soft, --ink, --brand, --brand-2, --ok, --danger, --notice
+
+Buenas practicas:
+- Usar border radius y sombras suaves ya existentes.
+- Mantener jerarquia de tipografia actual.
+- Evitar saturar con colores nuevos sin justificar.
+- Mantener boton primario (.btn-primary) para acciones principales.
+- Mantener boton secundario/neutral (.ghost-btn) para acciones de soporte.
+
+====================================================================
+7) CONTROL DE RESPONSIVE
+====================================================================
+Breakpoints actuales relevantes:
+- <= 900px: ajustes de nav, checkout y admin grid
+- <= 768px: ajustes de hero
+- <= 640px: ajustes del bloque phone-row
+
+Regla operativa:
+- Si agregas un bloque nuevo, crear su ajuste responsive en los mismos breakpoints.
+- No asumir desktop como vista unica.
+
+====================================================================
+8) ACCESIBILIDAD MINIMA OBLIGATORIA
+====================================================================
+[ ] Inputs con label asociado
+[ ] Botones con texto claro
+[ ] Enlaces visibles y distinguibles
+[ ] Contraste adecuado
+[ ] Elementos interactivos navegables en mobile
+
+====================================================================
+9) FLUJO DE APROBACION INTERNA DE CAMBIOS UI
+====================================================================
+Paso 1: enviar capturas antes/despues (desktop y mobile)
+Paso 2: validar checklist funcional
+Paso 3: validar build TypeScript
+Paso 4: registrar en documento de cambios (fecha + que se modifico)
+
+====================================================================
+10) ERRORES COMUNES A EVITAR
+====================================================================
+- Romper layout de admin por tocar grillas globales.
+- Cambiar nombres de campos de formularios.
+- Ocultar accidentalmente modal +18 o boton WhatsApp.
+- Generar solapamientos en mobile.
+- Modificar estilos globales sin revisar impacto en todas las paginas.
+
+====================================================================
+11) PROTOCOLO RAPIDO SI ALGO SE ROMPE
+====================================================================
+1. Revertir ultimo bloque visual modificado.
+2. Ejecutar npm run build.
+3. Revisar consola del navegador en la vista afectada.
+4. Validar IDs y clases esperadas por JS.
+5. Aplicar fix puntual (no rehacer todo el layout).
+
+Fin de guia.

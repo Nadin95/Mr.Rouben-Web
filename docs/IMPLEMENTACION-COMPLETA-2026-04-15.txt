@@ -1,0 +1,152 @@
+MR ROUBEN - DOCUMENTACION COMPLETA DE IMPLEMENTACION
+Fecha: 2026-04-15
+Estado general: Implementado y compilando correctamente (TypeScript OK).
+
+====================================================================
+1) AUTENTICACION, REGISTRO Y CONTROL DE EDAD
+====================================================================
+- Registro con selector de codigo de pais para telefono.
+- Normalizacion de telefono en backend a formato internacional (+codigo + numero).
+- Validaciones de telefono y campos obligatorios.
+- Flujo de verificacion de email para usuarios no admin.
+- Se agrego modal de verificacion +18 en login y registro.
+  - Bloquea formularios hasta confirmar mayoria de edad.
+  - Persistencia de confirmacion en navegador (localStorage).
+
+====================================================================
+2) CHECKOUT Y CARRITO
+====================================================================
+- Se usa telefono registrado por defecto en checkout.
+- Checkbox para usar telefono registrado o escribir uno alternativo.
+- Mensajeria de confirmacion ajustada segun estado real de WhatsApp.
+- Navbar actualizado: "Carrito" en lugar de "Checkout".
+
+====================================================================
+3) CATALOGO, IMAGENES Y HOME
+====================================================================
+- Productos con imagen por URL o por carga local.
+- Carga local guardada en carpeta publica uploads.
+- Miniaturas visibles en Home, Catalogo y Admin.
+- Home con carrusel configurable por categoria.
+- Carrusel configurable por URL o archivo local para:
+  - Tabaco
+  - Vapers
+  - Parafernalia
+
+====================================================================
+4) COMUNIDAD (FORO) - FLUJO MODERADO
+====================================================================
+- Usuario logueado puede solicitar inicio de conversacion.
+- Solicitud obliga seleccion de categoria y producto.
+- Estado inicial de solicitud: pending.
+- Admin aprueba solicitud para habilitarla publicamente.
+- Solo conversaciones approved se muestran al publico.
+- Comentarios habilitados en conversaciones approved.
+- Comentarios bloqueados en conversaciones no aprobadas.
+- Vista de Comunidad optimizada con boton para mostrar/ocultar formulario.
+
+====================================================================
+5) PANEL ADMIN (REORGANIZADO POR SECCIONES)
+====================================================================
+Secciones nuevas en panel para operacion clara:
+1. Stock y Agregar Productos
+2. Carrusel y Categorias
+3. Solicitudes de Chat en Comunidad
+4. Pagos
+
+Funcionalidad de stock mejorada:
+- En productos existentes se puede actualizar stock y cambiar imagen en el mismo formulario.
+- Soporta archivo local y URL; prioridad al archivo cuando ambos existen.
+
+====================================================================
+6) INTEGRACIONES ACTUALES
+====================================================================
+- SMTP operativo via variables de entorno (envio real habilitable).
+- WhatsApp con habilitacion por flag de entorno.
+- Si WhatsApp no esta ready, se registra skip en logs sin romper flujo.
+- Boton flotante de contacto por WhatsApp disponible en todas las vistas.
+
+====================================================================
+7) PREPARACION PARA STACK FUTURO (OPCION 3)
+====================================================================
+Se dejo preparado el proyecto para evolucionar a:
+- Hosting Node economico (Render / Railway)
+- WhatsApp API oficial (Meta Cloud API)
+- OCR externo (Google Vision)
+- Storage externo (Cloudinary)
+- Email transaccional (Brevo)
+- Monitoreo (UptimeRobot)
+
+Cambios realizados:
+- .env.example ampliado con variables de estos servicios.
+- src/config/env.ts extendido con claves tipadas para integraciones futuras.
+
+====================================================================
+8) ENDPOINTS CLAVE AGREGADOS / AJUSTADOS
+====================================================================
+Admin:
+- POST /admin/catalog/add
+- POST /admin/inventory/:productId
+- POST /admin/home-carousel
+- POST /admin/forum/:postId/approve
+- POST /admin/payments/:orderId/approve
+
+Comunidad web:
+- POST /foro
+- POST /foro/:postId/comentario
+
+Comunidad API:
+- GET /api/forum (solo approved)
+- POST /api/forum (crea solicitud pending)
+- POST /api/forum/:postId/comments (solo approved)
+
+====================================================================
+9) ARCHIVOS RELEVANTES MODIFICADOS
+====================================================================
+Backend:
+- src/controllers/admin.controller.ts
+- src/controllers/forum.controller.ts
+- src/controllers/view.controller.ts
+- src/middlewares/attachCurrentUser.ts
+- src/middlewares/uploadProductImage.ts
+- src/models/ForumPost.ts
+- src/models/SiteConfig.ts
+- src/routes/admin.routes.ts
+- src/routes/view.routes.ts
+- src/config/env.ts
+
+Frontend:
+- src/views/pages/admin.ejs
+- src/views/pages/forum.ejs
+- src/views/pages/home.ejs
+- src/views/pages/catalog.ejs
+- src/views/pages/checkout.ejs
+- src/views/pages/login.ejs
+- src/views/pages/register.ejs
+- src/views/partials/head.ejs
+- src/views/partials/footer.ejs
+- src/views/partials/age-gate.ejs
+- src/public/css/styles.css
+- src/public/js/store.js
+
+Soporte:
+- .env.example
+- src/public/uploads/
+
+====================================================================
+10) VALIDACION TECNICA
+====================================================================
+- Build TypeScript: OK (tsc).
+- Flujo funcional probado en:
+  - Home, Catalogo, Checkout, Comunidad, Admin.
+  - Alta y actualizacion de imagenes.
+  - Solicitud/aprobacion/comentarios en Comunidad.
+  - Validacion de pagos en admin.
+
+====================================================================
+11) PENDIENTES RECOMENDADOS (SIGUIENTE ETAPA)
+====================================================================
+- Migrar WhatsApp legacy a API oficial Meta.
+- Integrar OCR real con Google Vision en flujo de comprobantes.
+- Migrar uploads locales a storage externo para produccion.
+- Agregar monitoreo/alertas de consumo para control de costo mensual.

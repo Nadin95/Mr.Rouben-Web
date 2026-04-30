@@ -1,0 +1,24 @@
+node_modules
+dist
+logs/
+
+# ── Secretos — NUNCA subir ────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+google-credentials*.json
+service-account*.json
+
+# ── Uploads locales (en prod se usa Cloudinary) ───────────────────────────────
+src/public/uploads/*
+!src/public/uploads/.gitkeep
+
+# ── pm2 / OS ─────────────────────────────────────────────────────────────────
+.pm2/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+*.swp

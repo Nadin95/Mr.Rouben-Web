@@ -1,0 +1,33 @@
+<%- include('../partials/head', { title }) %>
+
+<section class="auth-shell">
+  <article class="auth-card">
+    <h1>Ingresar</h1>
+    <p>Accedé para participar en la comunidad y gestionar tus compras.</p>
+
+    <% if (notice) { %>
+      <p class="form-notice"><%= notice %></p>
+    <% } %>
+
+    <% if (error) { %>
+      <p class="form-error"><%= error %></p>
+    <% } %>
+
+    <form method="post" action="/login" class="auth-form age-gate-form">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required value="<%= formData.email %>" />
+
+      <label for="password">Contraseña</label>
+      <input id="password" name="password" type="password" required minlength="8" />
+
+      <button type="submit" class="btn-primary" data-loading="Ingresando...">Entrar</button>
+    </form>
+
+    <p class="auth-link-row">¿No tenés cuenta? <a href="/registro">Crearla ahora</a></p>
+    <p class="auth-link-row"><a href="/forgot-password">¿Olvidaste tu contraseña?</a></p>
+  </article>
+</section>
+
+<%- include('../partials/age-gate') %>
+
+<%- include('../partials/footer') %>

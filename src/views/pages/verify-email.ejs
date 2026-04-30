@@ -1,0 +1,16 @@
+<%- include('../partials/head', { title }) %>
+
+<section class="auth-shell">
+  <article class="auth-card">
+    <h1>Verificación de Email</h1>
+    <% if (success) { %>
+      <p class="form-notice"><%= message %></p>
+      <a href="/login" class="btn-primary">Ir al login</a>
+    <% } else { %>
+      <p class="form-error"><%= message %></p>
+      <a href="/registro" class="btn-primary">Volver a registro</a>
+    <% } %>
+  </article>
+</section>
+
+<%- include('../partials/footer') %>

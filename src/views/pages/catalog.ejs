@@ -1,0 +1,70 @@
+<%- include('../partials/head', { title }) %>
+
+<section class="section-title-row">
+  <h1>Catálogo</h1>
+  <p>Explorá por categorías: Tabaco, Vapers y Parafernalia.</p>
+</section>
+
+<section class="catalog-toolbar">
+  <button class="ghost-btn catalog-menu-toggle" id="catalog-menu-toggle" type="button" aria-controls="catalog-menu" aria-expanded="false">
+    Ver categorías
+  </button>
+  <nav class="catalog-menu is-collapsed" id="catalog-menu" aria-label="Navegación por categorías">
+    <% Object.keys(categories).forEach((category) => { %>
+      <a href="#<%= category.toLowerCase() %>"><%= category %></a>
+    <% }) %>
+  </nav>
+</section>
+
+<% Object.entries(categories).forEach(([category, products]) => { %>
+  <section class="catalog-block" id="<%= category.toLowerCase() %>">
+    <details class="catalog-accordion" open>
+      <summary>
+        <span><%= category %></span>
+        <small><%= products.length %> productos</small>
+      </summary>
+
+      <div class="catalog-accordion-content">
+        <div class="product-grid">
+          <% if (!products.length) { %>
+            <p>Sin productos en esta categoría.</p>
+          <% } %>
+
+          <% products.forEach((product) => { %>
+            <article class="product-card">
+              <div class="product-visual">
+                <% if (product.imageUrl) { %>
+                  <img src="<%= product.imageUrl %>" alt="Imagen de <%= product.name %>" class="product-thumb" loading="lazy" />
+                <% } else { %>
+                  <div class="product-thumb product-thumb-fallback">Imagen no disponible</div>
+                <% } %>
+                <span class="product-price-tag">$<%= product.price %></span>
+              </div>
+              <h3 class="product-title"><%= product.name %></h3>
+              <p class="product-copy"><%= product.description %></p>
+              <div class="product-meta">
+                <span class="product-meta-label"><%= category %></span>
+                <% if (!product.isAvailable) { %>
+                  <span class="badge-out">Sin Stock</span>
+                <% } else { %>
+                  <span class="badge-ok">Disponible</span>
+                <% } %>
+              </div>
+              <button
+                class="btn-cart js-add-to-cart"
+                data-product-id="<%= product._id %>"
+                data-product-name="<%= product.name %>"
+                data-product-price="<%= product.price %>"
+                <%= product.isAvailable ? '' : 'disabled' %>
+              >
+                <%= product.isAvailable ? 'Agregar al carrito' : 'No disponible' %>
+              </button>
+            </article>
+          <% }) %>
+        </div>
+      </div>
+    </details>
+  </section>
+<% }) %>
+
+<%- include('../partials/footer') %>

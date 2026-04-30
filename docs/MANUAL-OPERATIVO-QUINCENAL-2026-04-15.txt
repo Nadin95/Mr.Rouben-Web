@@ -1,0 +1,146 @@
+MR ROUBEN - MANUAL OPERATIVO QUINCENAL
+Fecha de inicio: 2026-04-15
+Frecuencia: cada 14 dias
+Objetivo: medir movimiento real de la web, controlar costos y tomar decisiones sin improvisar.
+
+====================================================================
+1) OBJETIVO DEL CONTROL QUINCENAL
+====================================================================
+- Ver si el canal online esta creciendo.
+- Detectar errores operativos antes de que afecten ventas.
+- Mantener costo mensual por debajo del objetivo inicial (ARS 35.000).
+- Decidir con datos cuando escalar servicios.
+
+====================================================================
+2) RUTINA FIJA CADA 14 DIAS (CHECKLIST)
+====================================================================
+A. DISPONIBILIDAD Y RENDIMIENTO
+[ ] Revisar uptime (UptimeRobot o similar).
+[ ] Confirmar que la home, catalogo, checkout y login cargan bien.
+[ ] Revisar tiempos de respuesta promedio (lentos o normales).
+[ ] Confirmar que no hay caidas repetidas del servidor.
+
+B. FUNNEL COMERCIAL
+[ ] Cantidad de visitas aproximadas del periodo.
+[ ] Registros nuevos de usuarios.
+[ ] Pedidos creados.
+[ ] Pedidos aprobados/pagados.
+[ ] Tasa de conversion (pedidos/visitas).
+
+C. PAGOS Y COMPROBANTES
+[ ] Total de comprobantes recibidos.
+[ ] Cuantos se validaron en forma automatica/asistida.
+[ ] Cuantos requirieron revision manual.
+[ ] Errores comunes detectados (monto, alias, imagen borrosa).
+
+D. WHATSAPP Y ATENCION
+[ ] Conversaciones iniciadas por clientes.
+[ ] Mensajes no entregados o con error.
+[ ] Tiempo promedio de respuesta al cliente.
+[ ] Solicitudes de comunidad pendientes de aprobacion.
+
+E. COMUNIDAD
+[ ] Solicitudes de conversacion creadas.
+[ ] Solicitudes aprobadas por admin.
+[ ] Cantidad de comentarios nuevos.
+[ ] Postes conflictivos o fuera de normas.
+
+F. CATALOGO Y CONTENIDO
+[ ] Stock desactualizado o productos sin imagen.
+[ ] Carrusel del home actualizado y funcionando.
+[ ] Productos agotados con alta demanda (para reponer).
+
+G. COSTOS Y PRESUPUESTO
+[ ] Gasto del periodo por servicio (hosting, DB, WhatsApp, OCR, email).
+[ ] Proyeccion mensual actualizada.
+[ ] Confirmar si seguimos debajo de ARS 35.000/mes.
+
+====================================================================
+3) TABLA DE UMBRALES (ALERTA TEMPRANA)
+====================================================================
+1. Uptime
+- Objetivo: >= 99.5%
+- Alerta: < 99.0%
+- Accion: revisar logs, reinicios, recursos y proveedor.
+
+2. Conversion
+- Objetivo inicial: >= 0.8% (en etapa temprana)
+- Alerta: < 0.4% durante 2 quincenas seguidas
+- Accion: revisar checkout, metodos de pago y mensajes de confianza.
+
+3. Validacion de comprobantes
+- Objetivo: >= 70% con proceso asistido rapido
+- Alerta: > 40% manuales por fallas repetidas
+- Accion: ajustar reglas OCR y mejorar instrucciones al cliente.
+
+4. Tiempo de respuesta WhatsApp
+- Objetivo: < 30 min en horario comercial
+- Alerta: > 90 min promedio
+- Accion: revisar flujo de notificaciones y disponibilidad operativa.
+
+5. Costo mensual total
+- Objetivo: <= ARS 35.000
+- Alerta: > ARS 35.000 en proyeccion de 2 quincenas
+- Accion: limitar OCR, ajustar conversaciones, revisar planes activos.
+
+====================================================================
+4) PLAN DE ACCION SI SE SUPERA EL PRESUPUESTO
+====================================================================
+Orden recomendado para recortar sin afectar la web:
+1) Reducir OCR solo a comprobantes dudosos (no todos).
+2) Limitar conversaciones no prioritarias en WhatsApp.
+3) Mantener email en plan free (solo transaccionales).
+4) Optimizar imagenes para bajar transferencia.
+5) Escalar solo el servicio estrictamente necesario.
+
+====================================================================
+5) DECISIONES DE ESCALAMIENTO (CUANDO CRECE)
+====================================================================
+Escalar Hosting Node cuando:
+- Caidas/reinicios frecuentes o CPU alta repetida.
+
+Escalar MongoDB Atlas cuando:
+- Latencia alta persistente, consultas lentas, uso de storage cercano al limite.
+
+Escalar WhatsApp/API cuando:
+- Conversaciones comerciales aumentan y hay limites de throughput.
+
+Escalar OCR cuando:
+- El flujo de validacion manual frena la operacion.
+
+====================================================================
+6) FORMATO DE REPORTE QUINCENAL (COPIAR/PEGAR)
+====================================================================
+Reporte Quincenal Nro: ____
+Periodo: ____ / ____
+Responsable: ____
+
+1. Estado general: (Verde / Amarillo / Rojo)
+2. Uptime: ____%
+3. Visitas aprox: ____
+4. Registros nuevos: ____
+5. Pedidos creados: ____
+6. Pedidos aprobados: ____
+7. Conversion aprox: ____%
+8. Comprobantes recibidos: ____
+9. Validacion asistida OK: ____
+10. Revision manual: ____
+11. Conversaciones WhatsApp: ____
+12. Tiempo promedio respuesta: ____
+13. Solicitudes comunidad: ____
+14. Comentarios comunidad: ____
+15. Costo quincenal estimado (ARS): ____
+16. Proyeccion mensual (ARS): ____
+17. Riesgos detectados:
+- ____
+- ____
+18. Acciones para proximas 2 semanas:
+- ____
+- ____
+
+====================================================================
+7) RECOMENDACION OPERATIVA FINAL
+====================================================================
+- Mantener esta rutina por al menos 3 meses para tener tendencia real.
+- No escalar por percepcion: escalar solo con umbrales y datos.
+- Si dos quincenas seguidas muestran alerta en conversion o costos, ejecutar ajuste inmediato.

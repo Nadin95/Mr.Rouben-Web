@@ -1,0 +1,133 @@
+<%- include('../partials/head', { title }) %>
+
+<section class="section-title-row">
+  <h1>Foro de la Comunidad</h1>
+  <p>Iniciá conversaciones por categoría y producto. El admin debe habilitar cada inicio de chat.</p>
+</section>
+
+<% if (error) { %>
+  <p class="form-error"><%= error %></p>
+<% } %>
+<% if (notice) { %>
+  <p class="form-notice"><%= notice %></p>
+<% } %>
+
+<% if (locals.currentUser) { %>
+  <button class="btn-primary forum-toggle-btn" type="button" id="forum-toggle-btn">Iniciar nueva conversación</button>
+  <article class="admin-card forum-request-card is-collapsed" id="forum-request-card">
+    <h2>Nueva solicitud de conversación</h2>
+
+    <form method="post" action="/foro" class="admin-form" id="forum-request-form">
+      <label>Título</label>
+      <input name="title" minlength="5" maxlength="120" required placeholder="Ej: Dudas sobre sabores suaves" />
+
+      <label>Categoría</label>
+      <select name="categoryTag" id="forum-category" required>
+        <option value="Tabaco">Tabaco</option>
+        <option value="Vapers">Vapers</option>
+        <option value="Parafernalia">Parafernalia</option>
+      </select>
+
+      <label>Producto</label>
+      <select name="productId" id="forum-product" required>
+        <% groupedProducts.Tabaco.forEach((product) => { %>
+          <option value="<%= product._id %>" data-category="Tabaco"><%= product.name %></option>
+        <% }) %>
+        <% groupedProducts.Vapers.forEach((product) => { %>
+          <option value="<%= product._id %>" data-category="Vapers" hidden><%= product.name %></option>
+        <% }) %>
+        <% groupedProducts.Parafernalia.forEach((product) => { %>
+          <option value="<%= product._id %>" data-category="Parafernalia" hidden><%= product.name %></option>
+        <% }) %>
+      </select>
+
+      <label>Mensaje inicial</label>
+      <textarea name="content" minlength="10" maxlength="5000" required placeholder="Contanos qué querés conversar sobre ese producto..."></textarea>
+
+      <button class="btn-primary" type="submit" data-loading="Enviando...">Enviar solicitud al admin</button>
+    </form>
+  </article>
+
+  <script>
+    (function () {
+      const toggleBtn = document.getElementById('forum-toggle-btn');
+      const requestCard = document.getElementById('forum-request-card');
+      const categorySelect = document.getElementById('forum-category');
+      const productSelect = document.getElementById('forum-product');
+
+      if (toggleBtn && requestCard) {
+        toggleBtn.addEventListener('click', () => {
+          requestCard.classList.toggle('is-collapsed');
+          toggleBtn.textContent = requestCard.classList.contains('is-collapsed')
+            ? 'Iniciar nueva conversación'
+            : 'Ocultar formulario';
+        });
+      }
+
+      if (!categorySelect || !productSelect) return;
+
+      const filterProducts = () => {
+        const selectedCategory = categorySelect.value;
+        let firstVisible = null;
+
+        Array.from(productSelect.options).forEach((option) => {
+          const visible = option.dataset.category === selectedCategory;
+          option.hidden = !visible;
+          if (visible && !firstVisible) {
+            firstVisible = option;
+          }
+        });
+
+        if (firstVisible) {
+          productSelect.value = firstVisible.value;
+        }
+      };
+
+      categorySelect.addEventListener('change', filterProducts);
+      filterProducts();
+    })();
+  </script>
+<% } else { %>
+  <p>Para iniciar una conversación en Comunidad, primero iniciá sesión.</p>
+<% } %>
+
+<div class="forum-list">
+  <% if (!posts.length) { %>
+    <p>Aún no hay conversaciones habilitadas. Cuando el admin apruebe solicitudes, aparecerán acá.</p>
+  <% } %>
+
+  <% posts.forEach((post) => { %>
+    <article class="forum-post">
+      <h2><%= post.title %></h2>
+      <p class="tag"><%= post.categoryTag %></p>
+      <p><strong>Producto:</strong> <%= post.productNameSnapshot %></p>
+      <p><%= post.content %></p>
+      <small>Autor: <%= post.author?.username || 'Usuario' %></small>
+      <p>Comentarios: <%= post.comments.length %></p>
+
+      <div class="forum-comments">
+        <% if (!post.comments.length) { %>
+          <p class="input-help">Todavía no hay comentarios. Sé el primero en responder.</p>
+        <% } %>
+        <% post.comments.forEach((comment) => { %>
+          <div class="forum-comment-item">
+            <p><%= comment.content %></p>
+            <small><%= comment.author?.username || 'Usuario' %></small>
+          </div>
+        <% }) %>
+      </div>
+
+      <% if (locals.currentUser) { %>
+        <form method="post" action="/foro/<%= post._id %>/comentario" class="admin-form forum-comment-form">
+          <label>Responder en esta conversación</label>
+          <textarea name="content" minlength="2" maxlength="600" required placeholder="Escribí tu comentario..."></textarea>
+          <button class="ghost-btn" type="submit" data-loading="Publicando...">Publicar comentario</button>
+        </form>
+      <% } else { %>
+        <p class="input-help">Iniciá sesión para comentar en esta conversación.</p>
+      <% } %>
+    </article>
+  <% }) %>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,66 @@
+<%- include('../partials/head', { title }) %>
+
+<section class="hero">
+  <h1>Selección premium para adultos</h1>
+  <p>Descubrí tabacos, vapers y parafernalia curada para una experiencia de consumo superior.</p>
+  <a class="cta" href="/catalogo">Ver catálogo</a>
+</section>
+
+<% if (homeCarouselSlides?.length) { %>
+  <section class="section-title-row">
+    <h2>Categorías destacadas</h2>
+  </section>
+
+  <div class="category-carousel" aria-label="Carrusel de categorías">
+    <% homeCarouselSlides.forEach((slide) => { %>
+      <a href="<%= slide.href %>" class="carousel-card">
+        <img src="<%= slide.imageUrl %>" alt="Categoría <%= slide.category %>" class="carousel-image" loading="lazy" />
+        <span class="carousel-label"><%= slide.category %></span>
+      </a>
+    <% }) %>
+  </div>
+<% } %>
+
+<section class="section-title-row">
+  <h2>Productos Destacados</h2>
+</section>
+
+<div class="product-grid">
+  <% if (!featuredProducts.length) { %>
+    <p>No hay productos destacados todavía.</p>
+  <% } %>
+
+  <% featuredProducts.forEach((product) => { %>
+    <article class="product-card">
+      <div class="product-visual">
+        <% if (product.imageUrl) { %>
+          <img src="<%= product.imageUrl %>" alt="Imagen de <%= product.name %>" class="product-thumb" loading="lazy" />
+        <% } else { %>
+          <div class="product-thumb product-thumb-fallback">Imagen no disponible</div>
+        <% } %>
+        <span class="product-price-tag">$<%= product.price %></span>
+      </div>
+      <h3 class="product-title"><%= product.name %></h3>
+      <p class="product-copy"><%= product.description %></p>
+      <div class="product-meta">
+        <span class="product-meta-label">Calidad seleccionada</span>
+        <% if (!product.isAvailable) { %>
+          <span class="badge-out">Sin Stock</span>
+        <% } else { %>
+          <span class="badge-ok">Disponible</span>
+        <% } %>
+      </div>
+      <button
+        class="btn-cart js-add-to-cart"
+        data-product-id="<%= product._id %>"
+        data-product-name="<%= product.name %>"
+        data-product-price="<%= product.price %>"
+        <%= product.isAvailable ? '' : 'disabled' %>
+      >
+        <%= product.isAvailable ? 'Agregar al carrito' : 'No disponible' %>
+      </button>
+    </article>
+  <% }) %>
+</div>
+
+<%- include('../partials/footer') %>
