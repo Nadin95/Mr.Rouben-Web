@@ -27,8 +27,9 @@ const buildStorage = (folder: string): multer.StorageEngine => {
     });
   }
 
-  // Local disk fallback
-  const uploadsDir = path.join(process.cwd(), 'src', 'public', 'uploads');
+  // Local disk fallback: write into the runtime public folder
+  // (src/public in dev, dist/public in production).
+  const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
   return multer.diskStorage({
     destination: (_req, _file, cb) => {
       fs.mkdirSync(uploadsDir, { recursive: true });
