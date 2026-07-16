@@ -23,7 +23,7 @@ export const env = {
   adminEmail: process.env.ADMIN_EMAIL || 'nadine@mrrouben.com',
   appBaseUrl: process.env.APP_BASE_URL || 'http://localhost:3000',
   emailFrom: process.env.EMAIL_FROM || 'no-reply@mrrouben.com',
-  resendApiKey: process.env.RESEND_API_KEY || '',
+  resendApiKey: (process.env.RESEND_API_KEY || '').trim(),
   smtpHost: process.env.SMTP_HOST || '',
   smtpPort: Number(process.env.SMTP_PORT) || 587,
   smtpUser: process.env.SMTP_USER || '',
