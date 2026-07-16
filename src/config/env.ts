@@ -19,6 +19,8 @@ export const env = {
   jwtIssuer: process.env.JWT_ISSUER || 'mr-rouben-api',
   jwtAudience: process.env.JWT_AUDIENCE || 'mr-rouben-clients',
   nadineEmail: process.env.NADINE_EMAIL || 'nadine@mrrouben.com',
+  adminUsername: process.env.ADMIN_USERNAME || 'mrrouben_admin',
+  adminEmail: process.env.ADMIN_EMAIL || 'nadine@mrrouben.com',
   appBaseUrl: process.env.APP_BASE_URL || 'http://localhost:3000',
   emailFrom: process.env.EMAIL_FROM || 'no-reply@mrrouben.com',
   resendApiKey: process.env.RESEND_API_KEY || '',

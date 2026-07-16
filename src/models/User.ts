@@ -83,10 +83,14 @@ userSchema.statics.assignRoleByIdentity = function assignRoleByIdentity(
   username: string,
   email: string
 ): UserRole {
-  const isNadine =
-    username.trim().toLowerCase() === 'nadine' ||
-    email.trim().toLowerCase() === (process.env.NADINE_EMAIL || 'nadine@mrrouben.com').toLowerCase();
-  return isNadine ? 'admin' : 'user';
+  const adminUsername = (process.env.ADMIN_USERNAME || 'mrrouben_admin').toLowerCase();
+  const adminEmail = (process.env.ADMIN_EMAIL || 'nadine@mrrouben.com').toLowerCase();
+  
+  const isAdmin =
+    username.trim().toLowerCase() === adminUsername ||
+    email.trim().toLowerCase() === adminEmail;
+  
+  return isAdmin ? 'admin' : 'user';
 };
 
 userSchema.pre('save', async function preSave(next) {
