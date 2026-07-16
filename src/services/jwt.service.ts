@@ -10,10 +10,15 @@ export interface JwtUserPayload {
 
 export const signToken = (payload: JwtUserPayload): string => {
   return jwt.sign(payload, env.jwtSecret, {
-    expiresIn: env.jwtExpiresIn
+    expiresIn: env.jwtExpiresIn,
+    issuer: env.jwtIssuer,
+    audience: env.jwtAudience
   } as jwt.SignOptions);
 };
 
 export const verifyToken = (token: string): JwtUserPayload => {
-  return jwt.verify(token, env.jwtSecret) as JwtUserPayload;
+  return jwt.verify(token, env.jwtSecret, {
+    issuer: env.jwtIssuer,
+    audience: env.jwtAudience
+  } as jwt.VerifyOptions) as JwtUserPayload;
 };

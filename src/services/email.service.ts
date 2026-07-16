@@ -1,8 +1,20 @@
+import { Resend } from 'resend';
 import nodemailer from 'nodemailer';
 import { env } from '../config/env';
 
 let transporter: any = null;
+let resendClient: Resend | null = null;
 let loggedTransportMode = false;
+
+const getResendClient = (): Resend | null => {
+  if (!env.resendApiKey) {
+    return null;
+  }
+  if (!resendClient) {
+    resendClient = new Resend(env.resendApiKey);
+  }
+  return resendClient;
+};
 
 const getTransporter = async (): Promise<any> => {
   if (transporter) {
@@ -29,7 +41,7 @@ const getTransporter = async (): Promise<any> => {
   }
 
   if (!loggedTransportMode) {
-    console.warn('SMTP not configured. Emails are simulated (jsonTransport) and will not be delivered.');
+    console.warn('Email provider not configured. Emails are simulated and will not be delivered.');
     loggedTransportMode = true;
   }
 
@@ -41,8 +53,26 @@ const getTransporter = async (): Promise<any> => {
 };
 
 export const sendEmail = async (to: string, subject: string, html: string): Promise<void> => {
-  const tx = await getTransporter();
+  // Try Resend first if configured
+  const resend = getResendClient();
+  if (resend) {
+    try {
+      const result = await resend.emails.send({
+        from: env.emailFrom,
+        to,
+        subject,
+        html
+      });
+      console.log(`[Resend] Email sent to ${to} with ID:`, result.data?.id);
+      return;
+    } catch (error) {
+      console.error(`[Resend] Failed to send email to ${to}:`, error);
+      throw error;
+    }
+  }
 
+  // Fallback to SMTP or simulation
+  const tx = await getTransporter();
   const info = await tx.sendMail({
     from: env.emailFrom,
     to,
@@ -52,5 +82,7 @@ export const sendEmail = async (to: string, subject: string, html: string): Prom
 
   if (info?.message) {
     console.log('Email payload (json transport):', String(info.message));
+  } else if (info?.id) {
+    console.log(`Email sent via SMTP with ID: ${info.id}`);
   }
 };
