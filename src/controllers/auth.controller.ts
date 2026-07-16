@@ -101,8 +101,15 @@ export const register = async (req: Request, res: Response): Promise<Response> =
     }
 
     const role = User.assignRoleByIdentity(String(username), String(email));
-    const verificationToken = await issueVerification(String(email).toLowerCase());
+    
+    // IMPORTANTE: Enviar email PRIMERO, antes de crear el usuario
+    // Si el email falla, no se crea el usuario
+    let verificationToken = '';
+    if (role !== 'admin') {
+      verificationToken = await issueVerification(String(email).toLowerCase());
+    }
 
+    // SOLO si el email se envió exitosamente (o es admin), crear el usuario
     const user = await User.create({
       username,
       email: String(email).toLowerCase(),
@@ -132,7 +139,18 @@ export const register = async (req: Request, res: Response): Promise<Response> =
       user: buildUserPayload(user)
     });
   } catch (error) {
-    return res.status(500).json({ message: 'Error al registrar usuario', error });
+    const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+    console.error('[Register Error]', errorMessage);
+    
+    // Si falla el envío de email, devolver error específico
+    if (errorMessage.includes('email') || errorMessage.includes('mail') || errorMessage.includes('Resend')) {
+      return res.status(500).json({ 
+        message: 'No pudimos enviar el email de verificación. Por favor, intenta de nuevo más tarde.',
+        error: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      });
+    }
+
+    return res.status(500).json({ message: 'Error al registrar usuario', error: errorMessage });
   }
 };
 
