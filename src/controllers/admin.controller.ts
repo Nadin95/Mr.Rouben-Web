@@ -310,8 +310,7 @@ export const updateHomeCarouselFromAdmin = async (req: Request, res: Response): 
   const { tabacoImageUrl, vapersImageUrl, parafernaliaImageUrl } = req.body;
   const files = (req as Request & { files?: { [fieldname: string]: Array<Express.Multer.File> } }).files;
 
-  const resolveFile = (f?: Express.Multer.File) =>
-    f ? (f.path?.startsWith('http') ? f.path : `/uploads/${f.filename}`) : '';
+  const resolveFile = (f?: Express.Multer.File) => (f ? resolveUploadUrl(f) : '');
 
   const tabacoFromFile = resolveFile(files?.tabacoImageFile?.[0]);
   const vapersFromFile = resolveFile(files?.vapersImageFile?.[0]);
