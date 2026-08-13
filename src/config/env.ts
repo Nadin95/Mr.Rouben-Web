@@ -49,6 +49,8 @@ export const env = {
   cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
   cloudinaryApiKey: process.env.CLOUDINARY_API_KEY || '',
   cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET || '',
+  // Directory where uploaded files are stored (absolute or relative to process.cwd())
+  uploadsDir: process.env.UPLOADS_DIR || 'uploads',
 
   // Email transaccional y monitoreo
   brevoApiKey: process.env.BREVO_API_KEY || '',

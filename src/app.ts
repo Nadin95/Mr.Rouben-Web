@@ -67,7 +67,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(attachCurrentUser);
-app.use('/uploads', express.static(path.join(path.resolve(__dirname, '..', '..'), 'uploads')));
+const uploadsStaticPath = path.isAbsolute(env.uploadsDir) ? env.uploadsDir : path.join(process.cwd(), env.uploadsDir);
+app.use('/uploads', express.static(uploadsStaticPath));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ── Health check ──────────────────────────────────────────────────────────────

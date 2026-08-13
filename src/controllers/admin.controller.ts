@@ -6,7 +6,7 @@ import { SiteConfig } from '../models/SiteConfig';
 import { sendCatalogUpdateEmails } from '../services/notification.service';
 import { clearViewCache } from './view.controller';
 import normalizeImageUrl from '../utils/normalizeImageUrl';
-import path from 'path';
+import diskUrlFor from '../utils/uploadPaths';
 import { whatsappService } from '../services/whatsapp.service';
 
 const parseVariantSelectorFromForm = (
@@ -180,14 +180,7 @@ export const validatePayment = async (req: Request, res: Response): Promise<Resp
   return res.status(200).json({ message: 'Pago validado', order });
 };
 
-const diskUrlFor = (file?: Express.Multer.File, folder = 'products'): string => {
-  if (!file) return '';
-  if (file.path && String(file.path).startsWith('http')) return file.path;
-
-  // Prefer to build a predictable URL: /uploads/<folder>/<filename>
-  const safeFilename = String(file.filename || '').replace(/\\/g, '/');
-  return `/${path.posix.join('uploads', folder, safeFilename)}`;
-};
+// Use `diskUrlFor` from utils/uploadPaths for canonical URLs
 
 export const createProductFromAdmin = async (req: Request, res: Response): Promise<void> => {
   const { name, description, category, price, stock, isFeatured, imageUrl, variantSelectorName, variantOptionsText } = req.body;
@@ -195,9 +188,11 @@ export const createProductFromAdmin = async (req: Request, res: Response): Promi
   const uploadedFile = uploadedFiles?.imageFile?.[0];
   const uploadedImageUrl = diskUrlFor(uploadedFile, 'products');
   const uploadedVariantFiles = uploadedFiles?.variantOptionImageFiles ?? [];
+
   if (uploadedFile) {
     console.debug('[uploads] main file:', { path: uploadedFile.path, destination: uploadedFile.destination, filename: uploadedFile.filename, resolvedUrl: uploadedImageUrl });
   }
+
   if (uploadedVariantFiles.length) {
     console.debug('[uploads] variant files:', uploadedVariantFiles.map(f => ({ path: f.path, filename: f.filename, resolvedUrl: diskUrlFor(f, 'products') })));
   }
@@ -240,9 +235,11 @@ export const updateInventoryFromAdmin = async (req: Request, res: Response): Pro
   const uploadedFile = uploadedFiles?.inventoryImageFile?.[0];
   const uploadedImageUrl = diskUrlFor(uploadedFile, 'products');
   const uploadedVariantFiles = uploadedFiles?.variantOptionImageFiles ?? [];
+
   if (uploadedFile) {
     console.debug('[uploads] inventory file:', { path: uploadedFile.path, destination: uploadedFile.destination, filename: uploadedFile.filename, resolvedUrl: uploadedImageUrl });
   }
+
   if (uploadedVariantFiles.length) {
     console.debug('[uploads] inventory variant files:', uploadedVariantFiles.map(f => ({ path: f.path, filename: f.filename, resolvedUrl: diskUrlFor(f, 'products') })));
   }

@@ -5,6 +5,7 @@ import { Product } from '../models/Product';
 import { User } from '../models/User';
 import { whatsappService } from '../services/whatsapp.service';
 import { AuthenticatedRequest } from '../types/auth';
+import diskUrlFor from '../utils/uploadPaths';
 
 interface CheckoutItemInput {
   productId: string;
@@ -202,9 +203,7 @@ export const uploadProof = async (
     return res.status(409).json({ message: 'Este pedido ya tiene un comprobante o fue procesado' });
   }
 
-  const proofUrl = uploadedFile
-    ? (uploadedFile.path && String(uploadedFile.path).startsWith('http') ? uploadedFile.path : `/uploads/proofs/${uploadedFile.filename}`)
-    : '';
+  const proofUrl = diskUrlFor(uploadedFile, 'proofs');
 
   await Order.findByIdAndUpdate(orderId, {
     paymentProofUrl: proofUrl,

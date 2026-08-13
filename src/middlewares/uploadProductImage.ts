@@ -15,8 +15,6 @@ const fileFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
 };
 
 // ── Storage: Cloudinary (prod) vs disk (dev) ──────────────────────────────────
-const getProjectRoot = () => path.resolve(__dirname, '..', '..');
-
 const buildStorage = (folder: string): multer.StorageEngine => {
   if (env.storageProvider === 'cloudinary' && isCloudinaryConfigured()) {
     return new CloudinaryStorage({
@@ -30,7 +28,8 @@ const buildStorage = (folder: string): multer.StorageEngine => {
   }
 
   // Persist uploads outside dist/public so they survive builds/restarts.
-  const uploadsDir = path.join(getProjectRoot(), 'uploads', folder);
+  const uploadsRoot = path.isAbsolute(env.uploadsDir) ? env.uploadsDir : path.join(process.cwd(), env.uploadsDir);
+  const uploadsDir = path.join(uploadsRoot, folder);
   return multer.diskStorage({
     destination: (_req, _file, cb) => {
       fs.mkdirSync(uploadsDir, { recursive: true });
