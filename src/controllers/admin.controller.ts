@@ -181,8 +181,29 @@ export const validatePayment = async (req: Request, res: Response): Promise<Resp
 
 const resolveUploadUrl = (file?: Express.Multer.File): string => {
   if (!file) return '';
+
   // Cloudinary sets file.path to the full https URL
   if (file.path && file.path.startsWith('http')) return file.path;
+
+  if (file.path) {
+    const projectRoot = process.cwd();
+    const relativePath = file.path.startsWith(projectRoot)
+      ? file.path.slice(projectRoot.length + 1)
+      : file.path;
+
+    const normalized = relativePath.replace(/\\/g, '/');
+    if (normalized.startsWith('uploads/')) return `/${normalized}`;
+  }
+
+  if (file.destination) {
+    const destination = String(file.destination).replace(/\\/g, '/');
+    const relativeDestination = destination.includes('/uploads/')
+      ? destination.split('/uploads/').slice(1).join('/uploads/')
+      : destination.split('/').slice(-2).join('/');
+
+    return `/${['uploads', relativeDestination, file.filename].filter(Boolean).join('/')}`.replace(/\/+/g, '/');
+  }
+
   return `/uploads/${file.filename}`;
 };
 
