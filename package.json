@@ -9,7 +9,8 @@
     "start": "node dist/server.js",
     "start:prod": "npm run build && npx pm2 start ecosystem.config.cjs --env production",
     "seed:nadine": "ts-node src/scripts/seedNadine.ts",
-    "seed:demo": "ts-node src/scripts/seedDemoData.ts"
+    "seed:demo": "ts-node src/scripts/seedDemoData.ts",
+    "migrate:images": "ts-node src/scripts/migrateImageUrls.ts"
   },
   "keywords": [
     "ecommerce",

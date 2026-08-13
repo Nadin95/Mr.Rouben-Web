@@ -5,8 +5,10 @@ import { Product } from '../models/Product';
 import { SiteConfig } from '../models/SiteConfig';
 import { User } from '../models/User';
 import { AuthenticatedRequest } from '../types/auth';
+import normalizeImageUrl from '../utils/normalizeImageUrl';
 
 const viewDataCache = new Map<string, { expiresAt: number; value: unknown }>();
+
 
 export const clearViewCache = (key?: 'home' | 'catalog') => {
   if (key) {
@@ -62,23 +64,28 @@ export const renderHome = async (_req: Request, res: Response): Promise<void> =>
     {
       category: 'Tabaco',
       href: '/catalogo#tabaco',
-      imageUrl: siteConfig?.homeCarousel?.tabacoImageUrl || ''
+      imageUrl: normalizeImageUrl(siteConfig?.homeCarousel?.tabacoImageUrl || '')
     },
     {
       category: 'Vapers',
       href: '/catalogo#vapers',
-      imageUrl: siteConfig?.homeCarousel?.vapersImageUrl || ''
+      imageUrl: normalizeImageUrl(siteConfig?.homeCarousel?.vapersImageUrl || '')
     },
     {
       category: 'Parafernalia',
       href: '/catalogo#parafernalia',
-      imageUrl: siteConfig?.homeCarousel?.parafernaliaImageUrl || ''
+      imageUrl: normalizeImageUrl(siteConfig?.homeCarousel?.parafernaliaImageUrl || '')
     }
   ].filter((slide) => slide.imageUrl);
 
+  const normalizedFeaturedProducts = (featuredProducts || []).map((p: any) => ({
+    ...p,
+    imageUrl: normalizeImageUrl(p?.imageUrl)
+  }));
+
   res.render('pages/home', {
     title: 'Inicio',
-    featuredProducts,
+    featuredProducts: normalizedFeaturedProducts,
     homeCarouselSlides
   });
 };
@@ -114,9 +121,9 @@ export const renderCatalog = async (_req: Request, res: Response): Promise<void>
   res.render('pages/catalog', {
     title: 'Catálogo',
     categories: {
-      Tabaco: tabaco,
-      Vapers: vapers,
-      Parafernalia: parafernalia
+      Tabaco: (tabaco || []).map((p: any) => ({ ...p, imageUrl: normalizeImageUrl(p?.imageUrl) })),
+      Vapers: (vapers || []).map((p: any) => ({ ...p, imageUrl: normalizeImageUrl(p?.imageUrl) })),
+      Parafernalia: (parafernalia || []).map((p: any) => ({ ...p, imageUrl: normalizeImageUrl(p?.imageUrl) }))
     }
   });
 };
@@ -200,9 +207,14 @@ export const renderOrderConfirm = async (req: AuthenticatedRequest, res: Respons
     return;
   }
 
+  const normalizedOrder = {
+    ...order,
+    paymentProofUrl: normalizeImageUrl(order?.paymentProofUrl)
+  } as any;
+
   res.render('pages/order-confirm', {
     title: 'Pedido confirmado',
-    order
+    order: normalizedOrder
   });
 };
 

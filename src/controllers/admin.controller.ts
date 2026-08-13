@@ -5,6 +5,7 @@ import { Product } from '../models/Product';
 import { SiteConfig } from '../models/SiteConfig';
 import { sendCatalogUpdateEmails } from '../services/notification.service';
 import { clearViewCache } from './view.controller';
+import normalizeImageUrl from '../utils/normalizeImageUrl';
 import { whatsappService } from '../services/whatsapp.service';
 
 const getMainSiteConfig = async () => {
@@ -43,10 +44,16 @@ export const getAdminDashboard = async (_req: Request, res: Response): Promise<v
     getMainSiteConfig()
   ]);
 
+  const normalizedProducts = (products || []).map((p: any) => ({ ...p, imageUrl: normalizeImageUrl(p?.imageUrl) }));
+  const normalizedOrders = (ordersPendingValidation || []).map((o: any) => ({
+    ...o,
+    paymentProofUrl: normalizeImageUrl(o?.paymentProofUrl)
+  }));
+
   res.render('pages/admin', {
     title: 'Panel de Administración',
-    products,
-    ordersPendingValidation,
+    products: normalizedProducts,
+    ordersPendingValidation: normalizedOrders,
     forumPendingApproval,
     homeCarousel: siteConfig.homeCarousel
   });
