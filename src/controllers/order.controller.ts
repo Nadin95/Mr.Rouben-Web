@@ -202,30 +202,9 @@ export const uploadProof = async (
     return res.status(409).json({ message: 'Este pedido ya tiene un comprobante o fue procesado' });
   }
 
-  const proofUrl = ((): string => {
-    if (!uploadedFile) return '';
-    if (uploadedFile.path && String(uploadedFile.path).startsWith('http')) return uploadedFile.path as string;
-
-    if (uploadedFile.path) {
-      const projectRoot = process.cwd();
-      const relativePath = String(uploadedFile.path).startsWith(projectRoot)
-        ? String(uploadedFile.path).slice(projectRoot.length + 1)
-        : String(uploadedFile.path);
-      const normalized = relativePath.replace(/\\/g, '/');
-      if (normalized.startsWith('uploads/')) return `/${normalized}`;
-    }
-
-    if (uploadedFile.destination) {
-      const destination = String(uploadedFile.destination).replace(/\\/g, '/');
-      const relativeDestination = destination.includes('/uploads/')
-        ? destination.split('/uploads/').slice(1).join('/uploads/')
-        : destination.split('/').slice(-2).join('/');
-
-      return `/${['uploads', relativeDestination, uploadedFile.filename].filter(Boolean).join('/')}`.replace(/\/+/g, '/');
-    }
-
-    return `/uploads/${uploadedFile.filename}`;
-  })();
+  const proofUrl = uploadedFile
+    ? (uploadedFile.path && String(uploadedFile.path).startsWith('http') ? uploadedFile.path : `/uploads/proofs/${uploadedFile.filename}`)
+    : '';
 
   await Order.findByIdAndUpdate(orderId, {
     paymentProofUrl: proofUrl,
