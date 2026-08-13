@@ -6,6 +6,7 @@ import { SiteConfig } from '../models/SiteConfig';
 import { sendCatalogUpdateEmails } from '../services/notification.service';
 import { clearViewCache } from './view.controller';
 import normalizeImageUrl from '../utils/normalizeImageUrl';
+import path from 'path';
 import { whatsappService } from '../services/whatsapp.service';
 
 const parseVariantSelectorFromForm = (
@@ -30,7 +31,7 @@ const parseVariantSelectorFromForm = (
       const stockValue = Number(rawParts[1] || 0);
       const fallbackImageUrl = String(rawParts[2] || '').trim();
       const uploadedFile = uploadedVariantFiles[index];
-      const imageUrl = uploadedFile ? resolveUploadUrl(uploadedFile) : fallbackImageUrl;
+      const imageUrl = uploadedFile ? diskUrlFor(uploadedFile, 'products') : fallbackImageUrl;
 
       if (!label) {
         return null;
@@ -71,7 +72,7 @@ const normalizeVariantSelectorForSave = (
       _id: option._id,
       label: option.label,
       stock: Number.isFinite(parsedStock) ? Math.max(0, parsedStock) : option.stock,
-      imageUrl: uploadedFile ? resolveUploadUrl(uploadedFile) : String(option.imageUrl ?? '').trim()
+      imageUrl: uploadedFile ? diskUrlFor(uploadedFile, 'products') : String(option.imageUrl ?? '').trim()
     };
   });
 };
@@ -179,45 +180,26 @@ export const validatePayment = async (req: Request, res: Response): Promise<Resp
   return res.status(200).json({ message: 'Pago validado', order });
 };
 
-const resolveUploadUrl = (file?: Express.Multer.File): string => {
+const diskUrlFor = (file?: Express.Multer.File, folder = 'products'): string => {
   if (!file) return '';
+  if (file.path && String(file.path).startsWith('http')) return file.path;
 
-  // Cloudinary sets file.path to the full https URL
-  if (file.path && file.path.startsWith('http')) return file.path;
-
-  if (file.path) {
-    const projectRoot = process.cwd();
-    const relativePath = file.path.startsWith(projectRoot)
-      ? file.path.slice(projectRoot.length + 1)
-      : file.path;
-
-    const normalized = relativePath.replace(/\\/g, '/');
-    if (normalized.startsWith('uploads/')) return `/${normalized}`;
-  }
-
-  if (file.destination) {
-    const destination = String(file.destination).replace(/\\/g, '/');
-    const relativeDestination = destination.includes('/uploads/')
-      ? destination.split('/uploads/').slice(1).join('/uploads/')
-      : destination.split('/').slice(-2).join('/');
-
-    return `/${['uploads', relativeDestination, file.filename].filter(Boolean).join('/')}`.replace(/\/+/g, '/');
-  }
-
-  return `/uploads/${file.filename}`;
+  // Prefer to build a predictable URL: /uploads/<folder>/<filename>
+  const safeFilename = String(file.filename || '').replace(/\\/g, '/');
+  return `/${path.posix.join('uploads', folder, safeFilename)}`;
 };
 
 export const createProductFromAdmin = async (req: Request, res: Response): Promise<void> => {
   const { name, description, category, price, stock, isFeatured, imageUrl, variantSelectorName, variantOptionsText } = req.body;
   const uploadedFiles = (req as Request & { files?: { [fieldname: string]: Express.Multer.File[] } }).files;
   const uploadedFile = uploadedFiles?.imageFile?.[0];
-  const uploadedImageUrl = resolveUploadUrl(uploadedFile);
+  const uploadedImageUrl = diskUrlFor(uploadedFile, 'products');
   const uploadedVariantFiles = uploadedFiles?.variantOptionImageFiles ?? [];
   if (uploadedFile) {
     console.debug('[uploads] main file:', { path: uploadedFile.path, destination: uploadedFile.destination, filename: uploadedFile.filename, resolvedUrl: uploadedImageUrl });
   }
   if (uploadedVariantFiles.length) {
-    console.debug('[uploads] variant files:', uploadedVariantFiles.map(f => ({ path: f.path, filename: f.filename, resolvedUrl: resolveUploadUrl(f) })));
+    console.debug('[uploads] variant files:', uploadedVariantFiles.map(f => ({ path: f.path, filename: f.filename, resolvedUrl: diskUrlFor(f, 'products') })));
   }
   const variantSelector = parseVariantSelectorFromForm(variantSelectorName, variantOptionsText, uploadedVariantFiles);
   const numericStock = Number(stock);
@@ -256,13 +238,13 @@ export const updateInventoryFromAdmin = async (req: Request, res: Response): Pro
   const imageUrlRaw = String(req.body.imageUrl || '').trim();
   const uploadedFiles = (req as Request & { files?: { [fieldname: string]: Express.Multer.File[] } }).files;
   const uploadedFile = uploadedFiles?.inventoryImageFile?.[0];
-  const uploadedImageUrl = resolveUploadUrl(uploadedFile);
+  const uploadedImageUrl = diskUrlFor(uploadedFile, 'products');
   const uploadedVariantFiles = uploadedFiles?.variantOptionImageFiles ?? [];
   if (uploadedFile) {
     console.debug('[uploads] inventory file:', { path: uploadedFile.path, destination: uploadedFile.destination, filename: uploadedFile.filename, resolvedUrl: uploadedImageUrl });
   }
   if (uploadedVariantFiles.length) {
-    console.debug('[uploads] inventory variant files:', uploadedVariantFiles.map(f => ({ path: f.path, filename: f.filename, resolvedUrl: resolveUploadUrl(f) })));
+    console.debug('[uploads] inventory variant files:', uploadedVariantFiles.map(f => ({ path: f.path, filename: f.filename, resolvedUrl: diskUrlFor(f, 'products') })));
   }
 
   const current = await Product.findById(productId);
@@ -322,7 +304,7 @@ export const updateHomeCarouselFromAdmin = async (req: Request, res: Response): 
   const { tabacoImageUrl, vapersImageUrl, parafernaliaImageUrl } = req.body;
   const files = (req as Request & { files?: { [fieldname: string]: Array<Express.Multer.File> } }).files;
 
-  const resolveFile = (f?: Express.Multer.File) => (f ? resolveUploadUrl(f) : '');
+  const resolveFile = (f?: Express.Multer.File) => (f ? diskUrlFor(f, 'products') : '');
 
   const tabacoFromFile = resolveFile(files?.tabacoImageFile?.[0]);
   const vapersFromFile = resolveFile(files?.vapersImageFile?.[0]);
