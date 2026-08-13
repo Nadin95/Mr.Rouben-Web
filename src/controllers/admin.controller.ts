@@ -213,6 +213,12 @@ export const createProductFromAdmin = async (req: Request, res: Response): Promi
   const uploadedFile = uploadedFiles?.imageFile?.[0];
   const uploadedImageUrl = resolveUploadUrl(uploadedFile);
   const uploadedVariantFiles = uploadedFiles?.variantOptionImageFiles ?? [];
+  if (uploadedFile) {
+    console.debug('[uploads] main file:', { path: uploadedFile.path, destination: uploadedFile.destination, filename: uploadedFile.filename, resolvedUrl: uploadedImageUrl });
+  }
+  if (uploadedVariantFiles.length) {
+    console.debug('[uploads] variant files:', uploadedVariantFiles.map(f => ({ path: f.path, filename: f.filename, resolvedUrl: resolveUploadUrl(f) })));
+  }
   const variantSelector = parseVariantSelectorFromForm(variantSelectorName, variantOptionsText, uploadedVariantFiles);
   const numericStock = Number(stock);
 
@@ -252,6 +258,12 @@ export const updateInventoryFromAdmin = async (req: Request, res: Response): Pro
   const uploadedFile = uploadedFiles?.inventoryImageFile?.[0];
   const uploadedImageUrl = resolveUploadUrl(uploadedFile);
   const uploadedVariantFiles = uploadedFiles?.variantOptionImageFiles ?? [];
+  if (uploadedFile) {
+    console.debug('[uploads] inventory file:', { path: uploadedFile.path, destination: uploadedFile.destination, filename: uploadedFile.filename, resolvedUrl: uploadedImageUrl });
+  }
+  if (uploadedVariantFiles.length) {
+    console.debug('[uploads] inventory variant files:', uploadedVariantFiles.map(f => ({ path: f.path, filename: f.filename, resolvedUrl: resolveUploadUrl(f) })));
+  }
 
   const current = await Product.findById(productId);
   const variantSelector = current?.variantSelector;
