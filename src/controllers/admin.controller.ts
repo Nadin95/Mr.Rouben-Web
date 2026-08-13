@@ -1,14 +1,18 @@
 import { Request, Response } from 'express';
 import { ForumPost } from '../models/ForumPost';
 import { Order } from '../models/Order';
-import { Product } from '../models/Product';
+import { Product, getProductAvailability, shouldUseGlobalStock } from '../models/Product';
 import { SiteConfig } from '../models/SiteConfig';
 import { sendCatalogUpdateEmails } from '../services/notification.service';
 import { clearViewCache } from './view.controller';
 import normalizeImageUrl from '../utils/normalizeImageUrl';
 import { whatsappService } from '../services/whatsapp.service';
 
-const parseVariantSelectorFromForm = (selectorName?: string, selectorOptionsText?: string) => {
+const parseVariantSelectorFromForm = (
+  selectorName?: string,
+  selectorOptionsText?: string,
+  uploadedVariantFiles: Array<Express.Multer.File> = []
+) => {
   const trimmedSelectorName = String(selectorName || '').trim();
   const lines = String(selectorOptionsText || '')
     .split(/\r?\n/)
@@ -20,11 +24,13 @@ const parseVariantSelectorFromForm = (selectorName?: string, selectorOptionsText
   }
 
   const options = lines
-    .map((line) => {
+    .map((line, index) => {
       const rawParts = line.split('|').map((part) => part.trim());
       const label = rawParts[0] || '';
       const stockValue = Number(rawParts[1] || 0);
-      const imageUrl = String(rawParts[2] || '').trim();
+      const fallbackImageUrl = String(rawParts[2] || '').trim();
+      const uploadedFile = uploadedVariantFiles[index];
+      const imageUrl = uploadedFile ? resolveUploadUrl(uploadedFile) : fallbackImageUrl;
 
       if (!label) {
         return null;
@@ -48,20 +54,24 @@ const parseVariantSelectorFromForm = (selectorName?: string, selectorOptionsText
   };
 };
 
-const normalizeVariantSelectorForSave = (existingOptions: Array<{ _id?: string; label: string; stock: number; imageUrl?: string }>, reqBody: Record<string, any>) => {
+const normalizeVariantSelectorForSave = (
+  existingOptions: Array<{ _id?: string; label: string; stock: number; imageUrl?: string }>,
+  reqBody: Record<string, any>,
+  uploadedVariantFiles: Array<Express.Multer.File> = []
+) => {
   const variantOptionStocks = reqBody.variantOptionStock ?? {};
-  const variantOptionImages = reqBody.variantOptionImage ?? {};
 
-  return existingOptions.map((option) => {
+  return existingOptions.map((option, index) => {
     const optionId = String(option._id || '');
     const rawStock = optionId ? variantOptionStocks[optionId] ?? variantOptionStocks[String(option._id)] : undefined;
     const parsedStock = Number(rawStock ?? option.stock);
+    const uploadedFile = uploadedVariantFiles[index];
 
     return {
       _id: option._id,
       label: option.label,
       stock: Number.isFinite(parsedStock) ? Math.max(0, parsedStock) : option.stock,
-      imageUrl: String(optionId ? variantOptionImages[optionId] ?? variantOptionImages[String(option._id)] ?? option.imageUrl ?? '' : option.imageUrl ?? '').trim()
+      imageUrl: uploadedFile ? resolveUploadUrl(uploadedFile) : String(option.imageUrl ?? '').trim()
     };
   });
 };
@@ -135,8 +145,8 @@ export const updateInventory = async (req: Request, res: Response): Promise<Resp
   const product = await Product.findByIdAndUpdate(
     productId,
     {
-      stock: numericStock,
-      isAvailable: numericStock > 0
+      stock: shouldUseGlobalStock(existing) ? numericStock : existing.stock,
+      isAvailable: getProductAvailability({ stock: numericStock, variantSelector: existing.variantSelector })
     },
     { new: true }
   );
@@ -178,10 +188,17 @@ const resolveUploadUrl = (file?: Express.Multer.File): string => {
 
 export const createProductFromAdmin = async (req: Request, res: Response): Promise<void> => {
   const { name, description, category, price, stock, isFeatured, imageUrl, variantSelectorName, variantOptionsText } = req.body;
-  const uploadedFile = (req as Request & { file?: Express.Multer.File }).file;
+  const uploadedFiles = (req as Request & { files?: { [fieldname: string]: Express.Multer.File[] } }).files;
+  const uploadedFile = uploadedFiles?.imageFile?.[0];
   const uploadedImageUrl = resolveUploadUrl(uploadedFile);
-  const variantSelector = parseVariantSelectorFromForm(variantSelectorName, variantOptionsText);
+  const uploadedVariantFiles = uploadedFiles?.variantOptionImageFiles ?? [];
+  const variantSelector = parseVariantSelectorFromForm(variantSelectorName, variantOptionsText, uploadedVariantFiles);
   const numericStock = Number(stock);
+
+  const availability = getProductAvailability({
+    stock: Number.isFinite(numericStock) ? Math.max(0, numericStock) : 0,
+    variantSelector: variantSelector ?? undefined
+  });
 
   await Product.create({
     name,
@@ -191,7 +208,7 @@ export const createProductFromAdmin = async (req: Request, res: Response): Promi
     stock: Number.isFinite(numericStock) ? Math.max(0, numericStock) : 0,
     imageUrl: uploadedImageUrl || String(imageUrl || '').trim(),
     isFeatured: isFeatured === 'on',
-    isAvailable: Number.isFinite(numericStock) ? numericStock > 0 : false,
+    isAvailable: availability,
     ...(variantSelector ? { variantSelector } : {})
   });
 
@@ -210,8 +227,10 @@ export const updateInventoryFromAdmin = async (req: Request, res: Response): Pro
   const { productId } = req.params;
   const newStock = Number(req.body.stock);
   const imageUrlRaw = String(req.body.imageUrl || '').trim();
-  const uploadedFile = (req as Request & { file?: Express.Multer.File }).file;
+  const uploadedFiles = (req as Request & { files?: { [fieldname: string]: Express.Multer.File[] } }).files;
+  const uploadedFile = uploadedFiles?.inventoryImageFile?.[0];
   const uploadedImageUrl = resolveUploadUrl(uploadedFile);
+  const uploadedVariantFiles = uploadedFiles?.variantOptionImageFiles ?? [];
 
   const current = await Product.findById(productId);
   const variantSelector = current?.variantSelector;
@@ -219,15 +238,19 @@ export const updateInventoryFromAdmin = async (req: Request, res: Response): Pro
   const nextVariantSelector = hasVariantSelector && variantSelector
     ? {
         name: variantSelector.name,
-        options: normalizeVariantSelectorForSave(variantSelector.options, req.body)
+        options: normalizeVariantSelectorForSave(variantSelector.options, req.body, uploadedVariantFiles)
       }
     : undefined;
 
   const normalizedStock = Number.isFinite(newStock) ? Math.max(0, newStock) : (current?.stock ?? 0);
+  const nextAvailability = getProductAvailability({
+    stock: normalizedStock,
+    variantSelector: nextVariantSelector ?? current?.variantSelector
+  });
 
   await Product.findByIdAndUpdate(productId, {
-    stock: normalizedStock,
-    isAvailable: hasVariantSelector ? (current?.isAvailable ?? true) : normalizedStock > 0,
+    stock: shouldUseGlobalStock(current ?? undefined) ? normalizedStock : current?.stock ?? 0,
+    isAvailable: nextAvailability,
     ...(nextVariantSelector ? { variantSelector: nextVariantSelector } : {}),
     ...(uploadedImageUrl || imageUrlRaw ? { imageUrl: uploadedImageUrl || imageUrlRaw } : {})
   });

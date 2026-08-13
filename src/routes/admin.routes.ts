@@ -21,7 +21,14 @@ adminRouter.use(authMiddleware, adminMiddleware);
 adminRouter.get('/', getAdminDashboard);
 adminRouter.patch('/inventory/:productId', updateInventory);
 adminRouter.patch('/payments/:orderId/validate', validatePayment);
-adminRouter.post('/catalog/add', uploadProductImage.single('imageFile'), createProductFromAdmin);
+adminRouter.post(
+  '/catalog/add',
+  uploadProductImage.fields([
+    { name: 'imageFile', maxCount: 1 },
+    { name: 'variantOptionImageFiles', maxCount: 100 }
+  ]),
+  createProductFromAdmin
+);
 adminRouter.post(
   '/home-carousel',
   uploadProductImage.fields([
@@ -32,6 +39,13 @@ adminRouter.post(
   updateHomeCarouselFromAdmin
 );
 adminRouter.post('/catalog/:productId/delete', deleteProductFromAdmin);
-adminRouter.post('/inventory/:productId', uploadProductImage.single('inventoryImageFile'), updateInventoryFromAdmin);
+adminRouter.post(
+  '/inventory/:productId',
+  uploadProductImage.fields([
+    { name: 'inventoryImageFile', maxCount: 1 },
+    { name: 'variantOptionImageFiles', maxCount: 100 }
+  ]),
+  updateInventoryFromAdmin
+);
 adminRouter.post('/payments/:orderId/approve', approvePaymentFromAdmin);
 adminRouter.post('/forum/:postId/approve', approveForumPostFromAdmin);

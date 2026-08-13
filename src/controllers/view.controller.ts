@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { ForumPost } from '../models/ForumPost';
 import { Order } from '../models/Order';
-import { Product } from '../models/Product';
+import { Product, getProductAvailability } from '../models/Product';
 import { SiteConfig } from '../models/SiteConfig';
 import { User } from '../models/User';
 import { AuthenticatedRequest } from '../types/auth';
@@ -46,7 +46,7 @@ export const renderHome = async (_req: Request, res: Response): Promise<void> =>
     async () => {
       const [cachedFeaturedProducts, cachedSiteConfig] = await Promise.all([
         Product.find({ isFeatured: true })
-          .select('name price imageUrl category description isAvailable stock')
+          .select('name price imageUrl category description isAvailable stock variantSelector')
           .sort({ createdAt: -1 })
           .limit(8)
           .lean(),
@@ -80,7 +80,8 @@ export const renderHome = async (_req: Request, res: Response): Promise<void> =>
 
   const normalizedFeaturedProducts = (featuredProducts || []).map((p: any) => ({
     ...p,
-    imageUrl: normalizeImageUrl(p?.imageUrl)
+    imageUrl: normalizeImageUrl(p?.imageUrl),
+    isAvailable: getProductAvailability(p)
   }));
 
   res.render('pages/home', {
@@ -97,15 +98,15 @@ export const renderCatalog = async (_req: Request, res: Response): Promise<void>
     async () => {
       const [cachedTabaco, cachedVapers, cachedParafernalia] = await Promise.all([
         Product.find({ category: 'Tabaco' })
-          .select('name description price imageUrl isAvailable stock category')
+          .select('name description price imageUrl isAvailable stock category variantSelector')
           .sort({ createdAt: -1 })
           .lean(),
         Product.find({ category: 'Vapers' })
-          .select('name description price imageUrl isAvailable stock category')
+          .select('name description price imageUrl isAvailable stock category variantSelector')
           .sort({ createdAt: -1 })
           .lean(),
         Product.find({ category: 'Parafernalia' })
-          .select('name description price imageUrl isAvailable stock category')
+          .select('name description price imageUrl isAvailable stock category variantSelector')
           .sort({ createdAt: -1 })
           .lean()
       ]);
@@ -121,9 +122,9 @@ export const renderCatalog = async (_req: Request, res: Response): Promise<void>
   res.render('pages/catalog', {
     title: 'Catálogo',
     categories: {
-      Tabaco: (tabaco || []).map((p: any) => ({ ...p, imageUrl: normalizeImageUrl(p?.imageUrl) })),
-      Vapers: (vapers || []).map((p: any) => ({ ...p, imageUrl: normalizeImageUrl(p?.imageUrl) })),
-      Parafernalia: (parafernalia || []).map((p: any) => ({ ...p, imageUrl: normalizeImageUrl(p?.imageUrl) }))
+      Tabaco: (tabaco || []).map((p: any) => ({ ...p, imageUrl: normalizeImageUrl(p?.imageUrl), isAvailable: getProductAvailability(p) })),
+      Vapers: (vapers || []).map((p: any) => ({ ...p, imageUrl: normalizeImageUrl(p?.imageUrl), isAvailable: getProductAvailability(p) })),
+      Parafernalia: (parafernalia || []).map((p: any) => ({ ...p, imageUrl: normalizeImageUrl(p?.imageUrl), isAvailable: getProductAvailability(p) }))
     }
   });
 };

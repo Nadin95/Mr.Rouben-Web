@@ -15,6 +15,8 @@ const fileFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
 };
 
 // ── Storage: Cloudinary (prod) vs disk (dev) ──────────────────────────────────
+const getProjectRoot = () => path.resolve(__dirname, '..', '..');
+
 const buildStorage = (folder: string): multer.StorageEngine => {
   if (env.storageProvider === 'cloudinary' && isCloudinaryConfigured()) {
     return new CloudinaryStorage({
@@ -27,9 +29,8 @@ const buildStorage = (folder: string): multer.StorageEngine => {
     });
   }
 
-  // Local disk fallback: write into the runtime public folder
-  // (src/public in dev, dist/public in production).
-  const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
+  // Persist uploads outside dist/public so they survive builds/restarts.
+  const uploadsDir = path.join(getProjectRoot(), 'uploads', folder);
   return multer.diskStorage({
     destination: (_req, _file, cb) => {
       fs.mkdirSync(uploadsDir, { recursive: true });

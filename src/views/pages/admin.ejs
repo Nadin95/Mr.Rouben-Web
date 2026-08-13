@@ -41,12 +41,15 @@
       <textarea
         name="variantOptionsText"
         rows="5"
-        placeholder="Una opción por línea&#10;Pequeña | 10 | https://...&#10;Mediana | 5"
+        placeholder="Una opción por línea&#10;Pequeña | 10&#10;Mediana | 5"
       ></textarea>
-      <small class="input-help">Formato: Nombre | stock | imagen URL opcional.</small>
+      <small class="input-help">Formato: Nombre | stock. Las imágenes de cada opción se suben desde la computadora en el mismo orden.</small>
 
-      <label>Imagen desde tu computadora</label>
+      <label>Imagen del producto desde tu computadora</label>
       <input name="imageFile" type="file" accept="image/*" />
+
+      <label>Imágenes de opciones desde tu computadora</label>
+      <input name="variantOptionImageFiles" type="file" accept="image/*" multiple />
 
       <label>Imagen del producto (URL)</label>
       <input name="imageUrl" type="url" placeholder="https://... (opcional)" />
@@ -81,15 +84,20 @@
             <% if (product.variantSelector && product.variantSelector.options && product.variantSelector.options.length) { %>
               <label><%= product.variantSelector.name || 'Selector' %></label>
               <div class="variant-options-editor">
-                <% product.variantSelector.options.forEach((option) => { %>
+                <% product.variantSelector.options.forEach((option, index) => { %>
                   <div class="variant-option-row">
                     <div>
                       <small><%= option.label %></small>
                       <input name="variantOptionStock[<%= option._id %>]" type="number" min="0" value="<%= option.stock %>" required />
                     </div>
                     <div>
-                      <small>Imagen opcional</small>
-                      <input name="variantOptionImage[<%= option._id %>]" type="url" value="<%= option.imageUrl || '' %>" placeholder="https://..." />
+                      <small>Imagen de opción</small>
+                      <input name="variantOptionImageFiles" type="file" accept="image/*" />
+                      <% if (option.imageUrl) { %>
+                        <div class="option-image-preview">
+                          <img src="<%= option.imageUrl %>" alt="Imagen de <%= option.label %>" class="admin-thumb" />
+                        </div>
+                      <% } %>
                     </div>
                   </div>
                 <% }) %>

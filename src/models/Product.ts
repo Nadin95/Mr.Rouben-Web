@@ -25,6 +25,20 @@ export interface IProduct extends Document {
   variantSelector?: IProductVariantSelector;
 }
 
+export const getProductAvailability = (product?: Partial<IProduct>): boolean => {
+  const options = product?.variantSelector?.options ?? [];
+
+  if (options.length) {
+    return options.some((option) => Number(option.stock ?? 0) > 0);
+  }
+
+  return Number(product?.stock ?? 0) > 0;
+};
+
+export const shouldUseGlobalStock = (product?: Partial<IProduct>): boolean => {
+  return !((product?.variantSelector?.options?.length ?? 0) > 0);
+};
+
 const productVariantOptionSchema = new Schema<IProductOption>(
   {
     label: {
@@ -110,10 +124,7 @@ const productSchema = new Schema<IProduct>(
 );
 
 productSchema.pre('save', function preSave(next) {
-  const hasVariantOptions = Boolean(this.variantSelector?.options?.length);
-  this.isAvailable = hasVariantOptions
-    ? this.variantSelector!.options.some((option) => option.stock > 0)
-    : this.stock > 0;
+  this.isAvailable = getProductAvailability(this as unknown as Partial<IProduct>);
   next();
 });
 
