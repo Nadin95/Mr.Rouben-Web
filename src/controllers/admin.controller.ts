@@ -8,6 +8,64 @@ import { clearViewCache } from './view.controller';
 import normalizeImageUrl from '../utils/normalizeImageUrl';
 import { whatsappService } from '../services/whatsapp.service';
 
+const parseVariantSelectorFromForm = (selectorName?: string, selectorOptionsText?: string) => {
+  const trimmedSelectorName = String(selectorName || '').trim();
+  const lines = String(selectorOptionsText || '')
+    .split(/\r?\n/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+
+  if (!trimmedSelectorName || !lines.length) {
+    return undefined;
+  }
+
+  const options = lines
+    .map((line) => {
+      const rawParts = line.split('|').map((part) => part.trim());
+      const label = rawParts[0] || '';
+      const stockValue = Number(rawParts[1] || 0);
+      const imageUrl = String(rawParts[2] || '').trim();
+
+      if (!label) {
+        return null;
+      }
+
+      return {
+        label,
+        stock: Number.isFinite(stockValue) ? Math.max(0, stockValue) : 0,
+        imageUrl
+      };
+    })
+    .filter(Boolean) as Array<{ label: string; stock: number; imageUrl: string }>;
+
+  if (!options.length) {
+    return undefined;
+  }
+
+  return {
+    name: trimmedSelectorName,
+    options
+  };
+};
+
+const normalizeVariantSelectorForSave = (existingOptions: Array<{ _id?: string; label: string; stock: number; imageUrl?: string }>, reqBody: Record<string, any>) => {
+  const variantOptionStocks = reqBody.variantOptionStock ?? {};
+  const variantOptionImages = reqBody.variantOptionImage ?? {};
+
+  return existingOptions.map((option) => {
+    const optionId = String(option._id || '');
+    const rawStock = optionId ? variantOptionStocks[optionId] ?? variantOptionStocks[String(option._id)] : undefined;
+    const parsedStock = Number(rawStock ?? option.stock);
+
+    return {
+      _id: option._id,
+      label: option.label,
+      stock: Number.isFinite(parsedStock) ? Math.max(0, parsedStock) : option.stock,
+      imageUrl: String(optionId ? variantOptionImages[optionId] ?? variantOptionImages[String(option._id)] ?? option.imageUrl ?? '' : option.imageUrl ?? '').trim()
+    };
+  });
+};
+
 const getMainSiteConfig = async () => {
   let siteConfig = await SiteConfig.findOne({ key: 'main' });
 
@@ -28,7 +86,7 @@ const getMainSiteConfig = async () => {
 export const getAdminDashboard = async (_req: Request, res: Response): Promise<void> => {
   const [products, ordersPendingValidation, forumPendingApproval, siteConfig] = await Promise.all([
     Product.find()
-      .select('name category price imageUrl isAvailable stock')
+      .select('name category price imageUrl isAvailable stock variantSelector')
       .sort({ createdAt: -1 })
       .lean(),
     Order.find({ status: { $in: ['pending_payment', 'whatsapp_pending_validation'] } })
@@ -119,19 +177,22 @@ const resolveUploadUrl = (file?: Express.Multer.File): string => {
 };
 
 export const createProductFromAdmin = async (req: Request, res: Response): Promise<void> => {
-  const { name, description, category, price, stock, isFeatured, imageUrl } = req.body;
+  const { name, description, category, price, stock, isFeatured, imageUrl, variantSelectorName, variantOptionsText } = req.body;
   const uploadedFile = (req as Request & { file?: Express.Multer.File }).file;
   const uploadedImageUrl = resolveUploadUrl(uploadedFile);
+  const variantSelector = parseVariantSelectorFromForm(variantSelectorName, variantOptionsText);
+  const numericStock = Number(stock);
 
   await Product.create({
     name,
     description,
     category,
     price: Number(price),
-    stock: Number(stock),
+    stock: Number.isFinite(numericStock) ? Math.max(0, numericStock) : 0,
     imageUrl: uploadedImageUrl || String(imageUrl || '').trim(),
     isFeatured: isFeatured === 'on',
-    isAvailable: Number(stock) > 0
+    isAvailable: Number.isFinite(numericStock) ? numericStock > 0 : false,
+    ...(variantSelector ? { variantSelector } : {})
   });
 
   clearViewCache();
@@ -153,14 +214,25 @@ export const updateInventoryFromAdmin = async (req: Request, res: Response): Pro
   const uploadedImageUrl = resolveUploadUrl(uploadedFile);
 
   const current = await Product.findById(productId);
+  const variantSelector = current?.variantSelector;
+  const hasVariantSelector = Boolean(variantSelector?.options?.length);
+  const nextVariantSelector = hasVariantSelector && variantSelector
+    ? {
+        name: variantSelector.name,
+        options: normalizeVariantSelectorForSave(variantSelector.options, req.body)
+      }
+    : undefined;
+
+  const normalizedStock = Number.isFinite(newStock) ? Math.max(0, newStock) : (current?.stock ?? 0);
 
   await Product.findByIdAndUpdate(productId, {
-    stock: newStock,
-    isAvailable: newStock > 0,
+    stock: normalizedStock,
+    isAvailable: hasVariantSelector ? (current?.isAvailable ?? true) : normalizedStock > 0,
+    ...(nextVariantSelector ? { variantSelector: nextVariantSelector } : {}),
     ...(uploadedImageUrl || imageUrlRaw ? { imageUrl: uploadedImageUrl || imageUrlRaw } : {})
   });
 
-  if (current && current.stock <= 0 && newStock > 0) {
+  if (current && current.stock <= 0 && normalizedStock > 0 && !hasVariantSelector) {
     const updated = await Product.findById(productId);
     if (updated) {
       await sendCatalogUpdateEmails(updated, 'restock');

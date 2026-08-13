@@ -9,6 +9,9 @@ import { AuthenticatedRequest } from '../types/auth';
 interface CheckoutItemInput {
   productId: string;
   quantity: number;
+  variantOptionId?: string;
+  variantSelectorName?: string;
+  variantLabel?: string;
 }
 
 export const createOrder = async (
@@ -46,7 +49,7 @@ export const createOrder = async (
 
   const uniqueIds = [...new Set(items.map((item) => item.productId))];
   const products = await Product.find({ _id: { $in: uniqueIds } })
-    .select('name price stock isAvailable')
+    .select('name price stock isAvailable variantSelector')
     .lean();
   const productsMap = new Map(products.map((product) => [String(product._id), product]));
 
@@ -55,6 +58,9 @@ export const createOrder = async (
     quantity: number;
     unitPrice: number;
     titleSnapshot: string;
+    variantSelectorName?: string;
+    variantLabel?: string;
+    variantOptionId?: string;
   }[];
 
   let total = 0;
@@ -66,16 +72,42 @@ export const createOrder = async (
       return res.status(404).json({ message: `Producto no encontrado: ${item.productId}` });
     }
 
-    if (!product.isAvailable || product.stock < item.quantity) {
-      return res.status(409).json({ message: `Stock insuficiente para ${product.name}` });
-    }
+    const variantName = String(item.variantSelectorName || product.variantSelector?.name || '').trim();
+    const variantOptionId = String(item.variantOptionId || '').trim();
+    const variantOption = variantOptionId && product.variantSelector?.options
+      ? product.variantSelector.options.find((option: any) => String(option._id) === variantOptionId)
+      : undefined;
 
-    orderItems.push({
-      product: String(product._id),
-      quantity: item.quantity,
-      unitPrice: product.price,
-      titleSnapshot: product.name
-    });
+    if (product.variantSelector && product.variantSelector.options?.length) {
+      if (!variantOption) {
+        return res.status(409).json({ message: `Debes seleccionar una opción válida para ${product.name}` });
+      }
+
+      if (variantOption.stock < item.quantity) {
+        return res.status(409).json({ message: `Stock insuficiente para ${product.name} (${variantOption.label})` });
+      }
+
+      orderItems.push({
+        product: String(product._id),
+        quantity: item.quantity,
+        unitPrice: product.price,
+        titleSnapshot: `${product.name} - ${variantOption.label}`,
+        variantSelectorName: variantName || product.variantSelector?.name || '',
+        variantLabel: variantOption.label,
+        variantOptionId: String(variantOption._id)
+      });
+    } else {
+      if (!product.isAvailable || product.stock < item.quantity) {
+        return res.status(409).json({ message: `Stock insuficiente para ${product.name}` });
+      }
+
+      orderItems.push({
+        product: String(product._id),
+        quantity: item.quantity,
+        unitPrice: product.price,
+        titleSnapshot: product.name
+      });
+    }
 
     total += product.price * item.quantity;
   }
@@ -96,17 +128,39 @@ export const createOrder = async (
   });
 
   await Promise.all(
-    orderItems.map((item) =>
-      Product.findByIdAndUpdate(item.product, {
+    orderItems.map(async (item) => {
+      if (item.variantOptionId) {
+        return Product.updateOne(
+          { _id: item.product, 'variantSelector.options._id': item.variantOptionId },
+          { $inc: { 'variantSelector.options.$.stock': -item.quantity } }
+        );
+      }
+
+      return Product.findByIdAndUpdate(item.product, {
         $inc: { stock: -item.quantity }
-      })
-    )
+      });
+    })
   );
 
   await Product.updateMany(
-    { stock: { $lte: 0 } },
     {
-      $set: { isAvailable: false, stock: 0 }
+      $or: [
+        { stock: { $lte: 0 } },
+        { 'variantSelector.options.stock': { $lte: 0 } }
+      ]
+    },
+    {
+      $set: { isAvailable: false }
+    }
+  );
+
+  await Product.updateMany(
+    {
+      stock: { $gt: 0 },
+      'variantSelector.options.stock': { $gt: 0 }
+    },
+    {
+      $set: { isAvailable: true }
     }
   );
 

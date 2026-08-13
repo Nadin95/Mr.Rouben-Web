@@ -13,6 +13,9 @@ interface IOrderItem {
   quantity: number;
   unitPrice: number;
   titleSnapshot: string;
+  variantSelectorName?: string;
+  variantLabel?: string;
+  variantOptionId?: string;
 }
 
 export interface IOrder extends Document {
@@ -47,6 +50,18 @@ const orderItemSchema = new Schema<IOrderItem>(
     titleSnapshot: {
       type: String,
       required: true
+    },
+    variantSelectorName: {
+      type: String,
+      default: ''
+    },
+    variantLabel: {
+      type: String,
+      default: ''
+    },
+    variantOptionId: {
+      type: String,
+      default: ''
     }
   },
   { _id: false }

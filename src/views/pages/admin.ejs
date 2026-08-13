@@ -34,6 +34,17 @@
       <label>Stock inicial</label>
       <input name="stock" type="number" min="0" required />
 
+      <label>Selector de tipo (opcional)</label>
+      <input name="variantSelectorName" type="text" placeholder="Tamaño, sabor, color..." />
+
+      <label>Opciones del selector</label>
+      <textarea
+        name="variantOptionsText"
+        rows="5"
+        placeholder="Una opción por línea&#10;Pequeña | 10 | https://...&#10;Mediana | 5"
+      ></textarea>
+      <small class="input-help">Formato: Nombre | stock | imagen URL opcional.</small>
+
       <label>Imagen desde tu computadora</label>
       <input name="imageFile" type="file" accept="image/*" />
 
@@ -67,8 +78,26 @@
             <p><%= product.category %> | $<%= product.price %> | Estado: <%= product.isAvailable ? 'Disponible' : 'Sin Stock' %></p>
           </div>
           <form method="post" action="/admin/inventory/<%= product._id %>" class="admin-form" enctype="multipart/form-data">
-            <label>Stock</label>
-            <input name="stock" type="number" min="0" value="<%= product.stock %>" required />
+            <% if (product.variantSelector && product.variantSelector.options && product.variantSelector.options.length) { %>
+              <label><%= product.variantSelector.name || 'Selector' %></label>
+              <div class="variant-options-editor">
+                <% product.variantSelector.options.forEach((option) => { %>
+                  <div class="variant-option-row">
+                    <div>
+                      <small><%= option.label %></small>
+                      <input name="variantOptionStock[<%= option._id %>]" type="number" min="0" value="<%= option.stock %>" required />
+                    </div>
+                    <div>
+                      <small>Imagen opcional</small>
+                      <input name="variantOptionImage[<%= option._id %>]" type="url" value="<%= option.imageUrl || '' %>" placeholder="https://..." />
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <label>Stock</label>
+              <input name="stock" type="number" min="0" value="<%= product.stock %>" required />
+            <% } %>
 
             <label>Actualizar imagen desde computadora</label>
             <input name="inventoryImageFile" type="file" accept="image/*" />

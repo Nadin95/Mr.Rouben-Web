@@ -1,6 +1,18 @@
 import { Document, Schema, model } from 'mongoose';
 import { Category } from '../types/category';
 
+export interface IProductOption {
+  _id?: string;
+  label: string;
+  stock: number;
+  imageUrl?: string;
+}
+
+export interface IProductVariantSelector {
+  name: string;
+  options: IProductOption[];
+}
+
 export interface IProduct extends Document {
   name: string;
   description: string;
@@ -10,7 +22,43 @@ export interface IProduct extends Document {
   isFeatured: boolean;
   isAvailable: boolean;
   stock: number;
+  variantSelector?: IProductVariantSelector;
 }
+
+const productVariantOptionSchema = new Schema<IProductOption>(
+  {
+    label: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    stock: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    imageUrl: {
+      type: String,
+      default: ''
+    }
+  },
+  { _id: true }
+);
+
+const productVariantSelectorSchema = new Schema<IProductVariantSelector>(
+  {
+    name: {
+      type: String,
+      default: '',
+      trim: true
+    },
+    options: {
+      type: [productVariantOptionSchema],
+      default: []
+    }
+  },
+  { _id: false }
+);
 
 const productSchema = new Schema<IProduct>(
   {
@@ -50,6 +98,10 @@ const productSchema = new Schema<IProduct>(
       type: Number,
       default: 0,
       min: 0
+    },
+    variantSelector: {
+      type: productVariantSelectorSchema,
+      default: undefined
     }
   },
   {
@@ -58,7 +110,10 @@ const productSchema = new Schema<IProduct>(
 );
 
 productSchema.pre('save', function preSave(next) {
-  this.isAvailable = this.stock > 0;
+  const hasVariantOptions = Boolean(this.variantSelector?.options?.length);
+  this.isAvailable = hasVariantOptions
+    ? this.variantSelector!.options.some((option) => option.stock > 0)
+    : this.stock > 0;
   next();
 });
 

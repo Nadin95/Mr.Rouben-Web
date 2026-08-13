@@ -50,11 +50,26 @@
                   <span class="badge-ok">Disponible</span>
                 <% } %>
               </div>
+
+              <% if (product.variantSelector && product.variantSelector.options && product.variantSelector.options.length) { %>
+                <div class="product-variant-block">
+                  <label for="option-<%= product._id %>"><%= product.variantSelector.name || 'Seleccionar opción' %></label>
+                  <select id="option-<%= product._id %>" class="js-product-option-select" data-product-id="<%= product._id %>">
+                    <% product.variantSelector.options.forEach((option) => { %>
+                      <option value="<%= option._id %>" data-variant-label="<%= option.label %>" <%= option.stock > 0 ? '' : 'disabled' %>>
+                        <%= option.label %> <% if (option.stock <= 0) { %>(Sin stock)<% } else { %>(Stock: <%= option.stock %>)<% } %>
+                      </option>
+                    <% }) %>
+                  </select>
+                </div>
+              <% } %>
+
               <button
                 class="btn-cart js-add-to-cart"
                 data-product-id="<%= product._id %>"
                 data-product-name="<%= product.name %>"
                 data-product-price="<%= product.price %>"
+                data-product-variant-name="<%= product.variantSelector?.name || '' %>"
                 <%= product.isAvailable ? '' : 'disabled' %>
               >
                 <%= product.isAvailable ? 'Agregar al carrito' : 'No disponible' %>

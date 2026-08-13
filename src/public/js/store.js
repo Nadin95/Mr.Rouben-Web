@@ -215,14 +215,20 @@
     const id = button.dataset.productId;
     const name = button.dataset.productName;
     const price = Number(button.dataset.productPrice);
+    const variantName = button.dataset.productVariantName || '';
 
     if (!id || !name || !price) {
       return;
     }
 
+    const card = button.closest('.product-card');
+    const select = card ? card.querySelector('.js-product-option-select') : null;
+    const optionId = select ? select.value : '';
+    const optionLabel = select ? (select.options[select.selectedIndex] || {}).dataset.variantLabel || '' : '';
+
     const cart = getCart();
     const existing = cart.find(function (item) {
-      return item.productId === id;
+      return item.productId === id && item.variantOptionId === optionId;
     });
 
     if (existing) {
@@ -232,7 +238,10 @@
         productId: id,
         name: name,
         unitPrice: price,
-        quantity: 1
+        quantity: 1,
+        variantSelectorName: variantName,
+        variantOptionId: optionId,
+        variantLabel: optionLabel
       });
     }
 
@@ -269,6 +278,8 @@
 
     cart.forEach(function (item) {
       total += item.unitPrice * item.quantity;
+      const itemKey = (item.productId || '') + ':' + (item.variantOptionId || '');
+      const variantText = item.variantLabel ? ' · ' + item.variantLabel : '';
 
       const row = document.createElement('div');
       row.className = 'checkout-row';
@@ -276,19 +287,24 @@
         '<div><strong>' +
         item.name +
         '</strong><p>' +
+        (item.variantSelectorName ? item.variantSelectorName + ': ' : '') +
+        item.variantLabel +
+        (item.variantSelectorName || item.variantLabel ? '' : '') +
+        variantText +
+        ' | ' +
         formatCurrency(item.unitPrice) +
         ' x ' +
         item.quantity +
         '</p></div>' +
         '<div class="checkout-actions">' +
         '<button type="button" data-action="dec" data-id="' +
-        item.productId +
+        itemKey +
         '">-</button>' +
         '<button type="button" data-action="inc" data-id="' +
-        item.productId +
+        itemKey +
         '">+</button>' +
         '<button type="button" data-action="remove" data-id="' +
-        item.productId +
+        itemKey +
         '">Eliminar</button>' +
         '</div>';
       container.appendChild(row);
@@ -309,7 +325,7 @@
 
         const next = getCart();
         const target = next.find(function (item) {
-          return item.productId === id;
+          return (item.productId || '') + ':' + (item.variantOptionId || '') === id;
         });
 
         if (!target) {
@@ -326,7 +342,7 @@
 
         if (action === 'remove' || target.quantity <= 0) {
           const filtered = next.filter(function (item) {
-            return item.productId !== id;
+            return (item.productId || '') + ':' + (item.variantOptionId || '') !== id;
           });
           saveCart(filtered);
         } else {
@@ -444,7 +460,8 @@
         let total = 0;
         cart.forEach(function (item) {
           total += item.unitPrice * item.quantity;
-          summaryHtml += '<div class="checkout-row"><div><strong>' + item.name + '</strong><p>' + formatCurrency(item.unitPrice) + ' × ' + item.quantity + '</p></div><p>' + formatCurrency(item.unitPrice * item.quantity) + '</p></div>';
+          const variantText = item.variantLabel ? ' · ' + item.variantLabel : '';
+          summaryHtml += '<div class="checkout-row"><div><strong>' + item.name + '</strong><p>' + (item.variantSelectorName ? item.variantSelectorName + ': ' : '') + (item.variantLabel || '') + variantText + ' | ' + formatCurrency(item.unitPrice) + ' × ' + item.quantity + '</p></div><p>' + formatCurrency(item.unitPrice * item.quantity) + '</p></div>';
         });
         summaryHtml += '<p class="checkout-total">Total: <strong>' + formatCurrency(total) + '</strong></p>';
         summaryHtml += '</div>';
@@ -476,7 +493,13 @@
       const customerPhone = phoneInput ? phoneInput.value.trim() : '';
 
       const items = cart.map(function (item) {
-        return { productId: item.productId, quantity: item.quantity };
+        return {
+          productId: item.productId,
+          quantity: item.quantity,
+          variantOptionId: item.variantOptionId || undefined,
+          variantSelectorName: item.variantSelectorName || undefined,
+          variantLabel: item.variantLabel || undefined
+        };
       });
 
       setButtonLoading(submitBtn, true);
