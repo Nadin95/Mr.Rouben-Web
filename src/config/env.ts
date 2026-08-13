@@ -52,6 +52,13 @@ export const env = {
   // Directory where uploaded files are stored (absolute or relative to process.cwd())
   uploadsDir: process.env.UPLOADS_DIR || 'uploads',
 
+  // Cloudflare R2 (S3-compatible)
+  r2AccessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+  r2SecretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+  r2Bucket: process.env.R2_BUCKET || '',
+  r2AccountId: process.env.R2_ACCOUNT_ID || '',
+  r2Endpoint: process.env.R2_ENDPOINT || '',
+
   // Email transaccional y monitoreo
   brevoApiKey: process.env.BREVO_API_KEY || '',
   uptimerobotApiKey: process.env.UPTIMEROBOT_API_KEY || ''

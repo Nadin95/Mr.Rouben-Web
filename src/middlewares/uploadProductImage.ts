@@ -3,6 +3,7 @@ import path from 'path';
 import multer from 'multer';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { cloudinary, isCloudinaryConfigured } from '../config/cloudinary';
+import r2Storage from '../utils/r2Storage';
 import { env } from '../config/env';
 
 // ── File filter (shared) ──────────────────────────────────────────────────────
@@ -26,6 +27,10 @@ const buildStorage = (folder: string): multer.StorageEngine => {
       } as Record<string, unknown>,
     });
   }
+
+    if (env.storageProvider === 'r2' && env.r2AccessKeyId && env.r2SecretAccessKey && env.r2Bucket && (env.r2Endpoint || env.r2AccountId)) {
+      return r2Storage(folder);
+    }
 
   // Persist uploads outside dist/public so they survive builds/restarts.
   const uploadsRoot = path.isAbsolute(env.uploadsDir) ? env.uploadsDir : path.join(process.cwd(), env.uploadsDir);
