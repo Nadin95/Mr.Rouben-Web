@@ -21,6 +21,20 @@ const app = express();
 app.set('trust proxy', 1);
 
 // ── Security headers ──────────────────────────────────────────────────────────
+// Build Content Security Policy and include Cloudflare R2 endpoint if configured
+const imgSrcList = ["'self'", 'data:', 'https://res.cloudinary.com'];
+try {
+  if (env.r2Endpoint) {
+    // extract origin (scheme + host) from configured endpoint
+    const origin = new URL(String(env.r2Endpoint)).origin;
+    imgSrcList.push(origin);
+  } else if (env.r2AccountId) {
+    imgSrcList.push(`https://${env.r2AccountId}.r2.cloudflarestorage.com`);
+  }
+} catch (e) {
+  // if URL parsing fails, skip adding R2 host to CSP
+}
+
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -29,7 +43,7 @@ app.use(
         scriptSrc: ["'self'", "'unsafe-inline'"],   // EJS inline scripts
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-        imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com'],
+        imgSrc: imgSrcList,
         connectSrc: ["'self'"],
       },
     },
