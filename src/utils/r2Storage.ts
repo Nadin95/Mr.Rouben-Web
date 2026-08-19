@@ -37,11 +37,19 @@ const r2Storage = (folder: string): multer.StorageEngine => {
         const filename = makeFilename(file.originalname || 'file.jpg');
         const key = `${folder}/${filename}`;
 
+        // Read the incoming stream into memory to determine content length
+        const chunks: Buffer[] = [];
+        for await (const chunk of file.stream) {
+          chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+        }
+        const body = Buffer.concat(chunks);
+
         const put = new PutObjectCommand({
           Bucket: bucket,
           Key: key,
-          Body: file.stream,
-          ContentType: file.mimetype
+          Body: body,
+          ContentType: file.mimetype,
+          ContentLength: body.length
         });
 
         await client.send(put);
@@ -54,10 +62,12 @@ const r2Storage = (folder: string): multer.StorageEngine => {
         const url = `${endpoint.replace(/\/+$/,'')}/${bucket}/${key}`;
 
         // Provide multer the necessary file info
+        // store r2 key on the file object so _removeFile can delete it later
+        file.r2Key = key;
         cb(null, {
           filename,
           path: url,
-          size: undefined
+          size: body.length
         });
       } catch (err) {
         cb(err as Error);
@@ -67,7 +77,7 @@ const r2Storage = (folder: string): multer.StorageEngine => {
       try {
         const bucket = env.r2Bucket;
         if (!bucket) return cb(null);
-        const key = file && file.filename ? `${file.fieldname ? file.fieldname : 'products'}/${file.filename}` : undefined;
+        const key = file && (file.r2Key || (file.filename ? `${folder}/${file.filename}` : undefined));
         if (!key) return cb(null);
         await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
         cb(null);
