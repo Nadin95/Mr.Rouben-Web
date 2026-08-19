@@ -10,6 +10,7 @@ import { forumRouter } from './routes/forum.routes';
 import { adminRouter } from './routes/admin.routes';
 import { orderRouter } from './routes/order.routes';
 import { viewRouter } from './routes/view.routes';
+import uploadsRouter from './routes/uploads.routes';
 import { attachCurrentUser } from './middlewares/attachCurrentUser';
 import { globalErrorHandler } from './middlewares/errorHandler';
 import { env } from './config/env';
@@ -81,6 +82,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(attachCurrentUser);
+// Mount R2 proxy route (so server can serve R2 objects under /uploads/r2)
+app.use('/uploads', uploadsRouter);
+
 const uploadsStaticPath = path.isAbsolute(env.uploadsDir) ? env.uploadsDir : path.join(process.cwd(), env.uploadsDir);
 app.use('/uploads', express.static(uploadsStaticPath));
 app.use(express.static(path.join(__dirname, 'public')));
