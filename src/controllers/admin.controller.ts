@@ -324,3 +324,20 @@ export const updateHomeCarouselFromAdmin = async (req: Request, res: Response): 
   clearViewCache('home');
   res.redirect('/admin');
 };
+
+// HEAD-check a public URL (used to quickly verify R2 objects are reachable)
+export const checkUploadUrl = async (req: Request, res: Response): Promise<Response> => {
+  const url = String(req.query.url || '').trim();
+  if (!url) {
+    return res.status(400).json({ message: 'url query parameter is required' });
+  }
+
+  try {
+    // Use global fetch (Node 18+). We only need the response status.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resp: any = await fetch(url, { method: 'HEAD' });
+    return res.status(200).json({ ok: Boolean(resp && resp.ok), status: resp.status, statusText: resp.statusText });
+  } catch (err: any) {
+    return res.status(500).json({ ok: false, error: String(err?.message || err) });
+  }
+};

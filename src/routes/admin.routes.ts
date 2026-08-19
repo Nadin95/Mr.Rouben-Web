@@ -9,6 +9,7 @@ import {
   updateInventoryFromAdmin,
   validatePayment
 } from '../controllers/admin.controller';
+import { checkUploadUrl } from '../controllers/admin.controller';
 import { approveForumPostFromAdmin } from '../controllers/forum.controller';
 import { adminMiddleware } from '../middlewares/adminMiddleware';
 import { authMiddleware } from '../middlewares/authMiddleware';
@@ -49,3 +50,4 @@ adminRouter.post(
 );
 adminRouter.post('/payments/:orderId/approve', approvePaymentFromAdmin);
 adminRouter.post('/forum/:postId/approve', approveForumPostFromAdmin);
+adminRouter.get('/uploads/check', checkUploadUrl);
