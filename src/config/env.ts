@@ -58,19 +58,20 @@ export const env = {
   r2Bucket: process.env.R2_BUCKET || '',
   r2AccountId: process.env.R2_ACCOUNT_ID || '',
   r2Endpoint: process.env.R2_ENDPOINT || '',
-  
-  // Non-sensitive startup debug (prints presence, not values)
-  try {
-    console.debug('[env] storageProvider=', env.storageProvider);
-    console.debug('[env] uploadsDir=', env.uploadsDir);
-    console.debug('[env] r2Bucket=', Boolean(env.r2Bucket));
-    console.debug('[env] r2CredsPresent=', Boolean(env.r2AccessKeyId && env.r2SecretAccessKey));
-    console.debug('[env] r2EndpointOrAccount=', Boolean(env.r2Endpoint || env.r2AccountId));
-  } catch (e) {
-    // ignore
-  }
-
   // Email transaccional y monitoreo
   brevoApiKey: process.env.BREVO_API_KEY || '',
   uptimerobotApiKey: process.env.UPTIMEROBOT_API_KEY || ''
 };
+
+// Non-sensitive startup debug (prints presence, not values)
+try {
+  // avoid referencing `env` before it's declared in some environments
+  // so access process.env directly for presence checks
+  console.debug('[env] storageProvider=', process.env.STORAGE_PROVIDER || '');
+  console.debug('[env] uploadsDir=', process.env.UPLOADS_DIR || 'uploads');
+  console.debug('[env] r2Bucket=', Boolean(process.env.R2_BUCKET));
+  console.debug('[env] r2CredsPresent=', Boolean(process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY));
+  console.debug('[env] r2EndpointOrAccount=', Boolean(process.env.R2_ENDPOINT || process.env.R2_ACCOUNT_ID));
+} catch (e) {
+  // ignore
+}
