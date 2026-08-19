@@ -58,6 +58,17 @@ export const env = {
   r2Bucket: process.env.R2_BUCKET || '',
   r2AccountId: process.env.R2_ACCOUNT_ID || '',
   r2Endpoint: process.env.R2_ENDPOINT || '',
+  
+  // Non-sensitive startup debug (prints presence, not values)
+  try {
+    console.debug('[env] storageProvider=', env.storageProvider);
+    console.debug('[env] uploadsDir=', env.uploadsDir);
+    console.debug('[env] r2Bucket=', Boolean(env.r2Bucket));
+    console.debug('[env] r2CredsPresent=', Boolean(env.r2AccessKeyId && env.r2SecretAccessKey));
+    console.debug('[env] r2EndpointOrAccount=', Boolean(env.r2Endpoint || env.r2AccountId));
+  } catch (e) {
+    // ignore
+  }
 
   // Email transaccional y monitoreo
   brevoApiKey: process.env.BREVO_API_KEY || '',
