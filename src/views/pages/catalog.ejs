@@ -34,7 +34,7 @@
             <article class="product-card">
               <div class="product-visual">
                 <% if (product.imageUrl) { %>
-                  <img src="<%= product.imageUrl %>" alt="Imagen de <%= product.name %>" class="product-thumb" loading="lazy" />
+                  <img id="product-img-<%= product._id %>" src="<%= product.imageUrl %>" data-original-image="<%= product.imageUrl %>" alt="Imagen de <%= product.name %>" class="product-thumb" loading="lazy" />
                 <% } else { %>
                   <div class="product-thumb product-thumb-fallback">Imagen no disponible</div>
                 <% } %>
@@ -55,8 +55,9 @@
                 <div class="product-variant-block">
                   <label for="option-<%= product._id %>"><%= product.variantSelector.name || 'Seleccionar opción' %></label>
                   <select id="option-<%= product._id %>" class="js-product-option-select" data-product-id="<%= product._id %>">
+                    <option value="" selected disabled>Seleccionar...</option>
                     <% product.variantSelector.options.forEach((option) => { %>
-                      <option value="<%= option._id %>" data-variant-label="<%= option.label %>" <%= option.stock > 0 ? '' : 'disabled' %>>
+                      <option value="<%= option._id %>" data-variant-label="<%= option.label %>" data-image-url="<%= option.imageUrl || '' %>" <%= option.stock > 0 ? '' : 'disabled' %>>
                         <%= option.label %> <% if (option.stock <= 0) { %>(Sin stock)<% } else { %>(Stock: <%= option.stock %>)<% } %>
                       </option>
                     <% }) %>

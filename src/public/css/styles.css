@@ -319,6 +319,23 @@ body.age-gate-open {
   background: #fff;
 }
 
+.product-variant-block select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: linear-gradient(180deg,#fff,#fbfbfb);
+  border: 1px solid rgba(44,36,31,0.12);
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  font-weight: 600;
+  color: var(--ink);
+  box-shadow: 0 6px 14px rgba(44,36,31,0.04);
+  min-width: 160px;
+}
+
+.product-variant-block select:focus {
+  outline: none;
+  box-shadow: 0 8px 20px rgba(44,36,31,0.08), 0 0 0 3px rgba(125,63,25,0.06);
+}
 .product-thumb-fallback {
   display: grid;
   place-items: center;

@@ -93,6 +93,31 @@
     });
   };
 
+  const bindVariantSelectors = function () {
+    document.querySelectorAll('.js-product-option-select').forEach(function (select) {
+      try {
+        const card = select.closest('.product-card');
+        const img = card ? card.querySelector('.product-thumb') : null;
+        if (img && !img.dataset.originalImage) {
+          img.dataset.originalImage = img.src || '';
+        }
+
+        select.addEventListener('change', function () {
+          if (!img) return;
+          const sel = select.options[select.selectedIndex];
+          const imageUrl = sel ? sel.dataset.imageUrl || '' : '';
+          if (imageUrl) {
+            img.src = imageUrl;
+          } else {
+            img.src = img.dataset.originalImage || img.src;
+          }
+        });
+      } catch (e) {
+        // ignore
+      }
+    });
+  };
+
   const bindAdminAccordion = function () {
     const sections = Array.from(document.querySelectorAll('.admin-accordion'));
     if (!sections.length) {
@@ -542,6 +567,7 @@
   bindFormLoadingStates();
   bindNavToggle();
   bindCatalogMenuToggle();
+  bindVariantSelectors();
   bindAdminAccordion();
   renderCheckout();
   bindCheckoutSubmit();

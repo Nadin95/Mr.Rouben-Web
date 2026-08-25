@@ -81,6 +81,15 @@ export const renderHome = async (_req: Request, res: Response): Promise<void> =>
   const normalizedFeaturedProducts = (featuredProducts || []).map((p: any) => ({
     ...p,
     imageUrl: normalizeImageUrl(p?.imageUrl),
+    variantSelector: p.variantSelector && p.variantSelector.options
+      ? {
+          name: p.variantSelector.name,
+          options: p.variantSelector.options.map((opt: any) => ({
+            ...opt,
+            imageUrl: normalizeImageUrl(opt?.imageUrl)
+          }))
+        }
+      : p.variantSelector,
     isAvailable: getProductAvailability(p)
   }));
 
@@ -122,9 +131,39 @@ export const renderCatalog = async (_req: Request, res: Response): Promise<void>
   res.render('pages/catalog', {
     title: 'Catálogo',
     categories: {
-      Tabaco: (tabaco || []).map((p: any) => ({ ...p, imageUrl: normalizeImageUrl(p?.imageUrl), isAvailable: getProductAvailability(p) })),
-      Vapers: (vapers || []).map((p: any) => ({ ...p, imageUrl: normalizeImageUrl(p?.imageUrl), isAvailable: getProductAvailability(p) })),
-      Parafernalia: (parafernalia || []).map((p: any) => ({ ...p, imageUrl: normalizeImageUrl(p?.imageUrl), isAvailable: getProductAvailability(p) }))
+      Tabaco: (tabaco || []).map((p: any) => ({
+        ...p,
+        imageUrl: normalizeImageUrl(p?.imageUrl),
+        variantSelector: p.variantSelector && p.variantSelector.options
+          ? {
+              name: p.variantSelector.name,
+              options: p.variantSelector.options.map((opt: any) => ({ ...opt, imageUrl: normalizeImageUrl(opt?.imageUrl) }))
+            }
+          : p.variantSelector,
+        isAvailable: getProductAvailability(p)
+      })),
+      Vapers: (vapers || []).map((p: any) => ({
+        ...p,
+        imageUrl: normalizeImageUrl(p?.imageUrl),
+        variantSelector: p.variantSelector && p.variantSelector.options
+          ? {
+              name: p.variantSelector.name,
+              options: p.variantSelector.options.map((opt: any) => ({ ...opt, imageUrl: normalizeImageUrl(opt?.imageUrl) }))
+            }
+          : p.variantSelector,
+        isAvailable: getProductAvailability(p)
+      })),
+      Parafernalia: (parafernalia || []).map((p: any) => ({
+        ...p,
+        imageUrl: normalizeImageUrl(p?.imageUrl),
+        variantSelector: p.variantSelector && p.variantSelector.options
+          ? {
+              name: p.variantSelector.name,
+              options: p.variantSelector.options.map((opt: any) => ({ ...opt, imageUrl: normalizeImageUrl(opt?.imageUrl) }))
+            }
+          : p.variantSelector,
+        isAvailable: getProductAvailability(p)
+      }))
     }
   });
 };
