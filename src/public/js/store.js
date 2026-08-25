@@ -251,6 +251,48 @@
     const optionId = select ? select.value : '';
     const optionLabel = select ? (select.options[select.selectedIndex] || {}).dataset.variantLabel || '' : '';
 
+    // If product has variant selector, require a selection
+    if (select) {
+      if (!optionId) {
+        alert('Por favor seleccioná una opción antes de agregar al carrito.');
+        return;
+      }
+
+      const opt = select.options[select.selectedIndex];
+      const optStock = Number(opt ? opt.dataset.stock || 0 : 0);
+      if (optStock <= 0) {
+        alert('La opción seleccionada está sin stock.');
+        return;
+      }
+
+      // Check existing quantity in cart for this product+option
+      const cart = getCart();
+      const existing = cart.find(function (item) {
+        return item.productId === id && item.variantOptionId === optionId;
+      });
+      const existingQty = existing ? existing.quantity : 0;
+      if (existingQty + 1 > optStock) {
+        alert('No hay suficiente stock para agregar otra unidad de esta opción.');
+        return;
+      }
+    } else {
+      // non-variant product: check product stock
+      const prodStock = Number(card ? card.dataset.productStock || 0 : 0);
+      const cart = getCart();
+      const existing = cart.find(function (item) {
+        return item.productId === id && !item.variantOptionId;
+      });
+      const existingQty = existing ? existing.quantity : 0;
+      if (prodStock <= 0) {
+        alert('El producto no tiene stock disponible.');
+        return;
+      }
+      if (existingQty + 1 > prodStock) {
+        alert('No hay suficiente stock para agregar otra unidad de este producto.');
+        return;
+      }
+    }
+
     const cart = getCart();
     const existing = cart.find(function (item) {
       return item.productId === id && item.variantOptionId === optionId;
