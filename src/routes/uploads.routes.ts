@@ -31,12 +31,14 @@ router.get('/r2', async (req, res) => {
   if (!key) return res.status(400).json({ message: 'key query parameter is required' });
 
   try {
+    console.debug('[uploads/r2] requested key:', key);
     const bucket = env.r2Bucket;
     if (!bucket) return res.status(500).json({ message: 'R2 bucket not configured' });
 
     const get = new GetObjectCommand({ Bucket: bucket, Key: key });
     const resp = await client.send(get) as any;
 
+    console.debug(`[uploads/r2] got object response for key=${key} ContentType=${resp.ContentType} ContentLength=${resp.ContentLength}`);
     // set headers
     const contentType = resp.ContentType || 'application/octet-stream';
     if (resp.CacheControl) res.setHeader('Cache-Control', resp.CacheControl);
@@ -48,6 +50,7 @@ router.get('/r2', async (req, res) => {
 
     await pipe(body, res);
   } catch (err: any) {
+    console.error('[uploads/r2] error fetching key=', key, err && err.message ? err.message : err);
     res.status(502).json({ ok: false, error: String(err?.message || err) });
   }
 });
