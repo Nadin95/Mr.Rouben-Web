@@ -143,26 +143,22 @@ export const createOrder = async (
     })
   );
 
-  await Product.updateMany(
-    {
-      $or: [
-        { stock: { $lte: 0 } },
-        { 'variantSelector.options.stock': { $lte: 0 } }
-      ]
-    },
-    {
-      $set: { isAvailable: false }
-    }
-  );
+  // Recompute `isAvailable` per affected product to avoid incorrect global updates.
+  const affectedProductIds = [...new Set(orderItems.map((it) => String(it.product)))];
+  await Promise.all(
+    affectedProductIds.map(async (pid) => {
+      const prod = await Product.findById(pid).select('stock variantSelector').lean();
+      if (!prod) return;
 
-  await Product.updateMany(
-    {
-      stock: { $gt: 0 },
-      'variantSelector.options.stock': { $gt: 0 }
-    },
-    {
-      $set: { isAvailable: true }
-    }
+      let nextAvailable = false;
+      if (prod.variantSelector && Array.isArray(prod.variantSelector.options) && prod.variantSelector.options.length) {
+        nextAvailable = prod.variantSelector.options.some((o: any) => Number(o.stock) > 0);
+      } else {
+        nextAvailable = Number(prod.stock) > 0;
+      }
+
+      await Product.findByIdAndUpdate(pid, { $set: { isAvailable: nextAvailable } });
+    })
   );
 
   await Promise.all([
